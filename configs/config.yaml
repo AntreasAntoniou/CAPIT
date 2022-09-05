@@ -1,0 +1,64 @@
+# @package _global_
+
+# specify here default training configuration
+defaults:
+  - _self_
+  - trainer: default.yaml
+  - model: milli_modus_prime_vi-transformer16.yaml
+  - datamodule: tali.yaml
+  - callbacks: wandb.yaml
+  - logger: wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+
+  # modes are special collections of config options for different purposes, e.g. debugging
+  - mode: default.yaml
+
+  # enable color logging
+  - hydra: logging.yaml
+
+
+
+resume: True
+checkpoint_path: null
+
+dataloading_only_run: False
+visualize_data_locally: False
+
+wandb_visualization_config:
+  visualize_data_in_wandb: False
+  visualize_preds_in_wandb: False
+  upload_interval_in_num_samples: 100
+  num_samples_to_upload_per_set: 10000
+  sets_to_upload:
+    - train
+    - val
+    - test
+
+# pretty print config at the start of the run using Rich library
+print_config: True
+
+# disable python warnings if they annoy you
+ignore_warnings: True
+logging_level: INFO
+# evaluate on test set, using best model weights achieved during training
+# lightning chooses best weights based on metric specified in checkpoint callback
+test_after_training: True
+
+batch_size: null
+# seed for random number generators in pytorch, numpy and python.random
+seed : 0
+
+wandb_project_name: ${env:WANDB_PROJECT}
+# name of the run, should be used along with experiment mode
+name: ${datamodule.dataset_config.dataset_name}-${model.name}-${datamodule.dataset_config.modality_config.name}-${seed}
+
+# path to original working directory
+# hydra hijacks working directory by changing it to the new log directory
+# so it's useful to have this path as a special variable
+# https://hydra.cc/docs/next/tutorials/basic/running_your_app/working_directory
+code_dir: ${hydra:runtime.cwd}
+root_experiment_dir: ${env:EXPERIMENTS_DIR}
+current_experiment_dir: ${root_experiment_dir}/${name}/
+# path to folder with data
+train_data_dir: ${env:TRAIN_DATASET_DIR}
+val_data_dir: ${env:VAL_DATASET_DIR}
+test_data_dir: ${env:TEST_DATASET_DIR}

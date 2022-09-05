@@ -1,0 +1,15 @@
+# https://wandb.ai
+
+wandb:
+  _target_: pytorch_lightning.loggers.wandb.WandbLogger
+  project: ${wandb_project_name}
+  name: local-dev
+  offline: False # set True to store all logs only locally
+  resume: ${resume}
+  save_dir: ${current_experiment_dir}/
+  log_model: 'all'
+  id: ${name}
+  prefix: ""
+  job_type: "dataset"
+  group: ""
+  tags: []

@@ -1,0 +1,38 @@
+method: grid
+metric:
+  goal: minimize
+  name: validation/overall_cross_entropy/epoch_mean
+parameters:
+  datamodule_name:
+    distribution: categorical
+    values:
+    - milli
+    - base
+  model_name:
+    distribution: categorical
+    values:
+    - centi_modus_prime_resnet50
+    - base_modus_prime_resnet50
+    - centi_modus_prime_vi-transformer16
+    - base_modus_prime_vi-transformer16
+  use_audio_modality:
+    distribution: categorical
+    values:
+    - False
+    - True
+  use_image_modality:
+    distribution: categorical
+    values:
+    - True
+  use_text_modality:
+    distribution: categorical
+    values:
+    - True
+    - False
+  use_video_modality:
+    distribution: categorical
+    values:
+    - False
+    - True
+program: wandb_sweep/train_eval_search.py
+

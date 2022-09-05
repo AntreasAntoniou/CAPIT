@@ -1,0 +1,8 @@
+defaults:
+  - modus_prime.yaml
+  - image_embedding_config: base-image-vi-transformer16.yaml
+  - audio_embedding_config: base-audio-convformer.yaml
+  - text_embedding_config: base-text-transformer.yaml
+  - video_embedding_config: base-video-transformer.yaml
+
+name: base_vit16

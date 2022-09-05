@@ -1,0 +1,17 @@
+gcloud compute instances create instance-1 \
+--project=tali-multi-modal \
+--zone=us-central1-f \
+--machine-type=a2-highgpu-8g \
+--network-interface=network-tier=PREMIUM,subnet=default \
+--no-restart-on-failure \
+--maintenance-policy=TERMINATE \
+--preemptible \
+--service-account=tali-multi-modal@tali-multi-modal.iam.gserviceaccount.com \
+--scopes=https://www.googleapis.com/auth/cloud-platform \
+--accelerator=count=8,type=nvidia-tesla-a100 \
+--create-disk=auto-delete=yes,boot=yes,device-name=instance-1,image=projects/tali-multi-modal/global/images/tali-ubuntu-cuda110-pytorch-v-1-2,mode=rw,size=50,type=projects/tali-multi-modal/zones/us-central1-f/diskTypes/pd-standard \
+--create-disk=auto-delete=yes,device-name=disk-1,image=projects/tali-multi-modal/global/images/tali-dataset-v3-2-us-central1-full,mode=rw,name=disk-1,size=3500,type=projects/tali-multi-modal/zones/us-central1-f/diskTypes/pd-ssd \
+--no-shielded-secure-boot \
+--shielded-vtpm \
+--shielded-integrity-monitoring \
+--reservation-affinity=any

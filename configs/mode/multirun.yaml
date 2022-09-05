@@ -1,0 +1,10 @@
+# @package _global_
+
+# experiment mode sets name of the logging folder to the experiment name
+# can also be used to name the run in the logger
+# example usage:
+# `python run.py mode=exp name=some_name`
+defaults:
+  - default.yaml
+
+ray_multi_run: True

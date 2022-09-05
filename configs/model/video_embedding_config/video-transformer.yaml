@@ -1,0 +1,6 @@
+
+_target_: tali.models.auto_builder.transformers.AutoVideoTransformers
+config:
+  transformer_num_layers: 4
+  transformer_num_heads: 8
+  embedding_output_features: 512

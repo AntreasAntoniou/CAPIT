@@ -1,0 +1,34 @@
+model_checkpoint_train:
+  _target_: pytorch_lightning.callbacks.ModelCheckpoint
+  monitor: training/overall_cross_entropy
+  save_on_train_epoch_end: True
+  save_top_k: 0
+  save_last: true
+  train_time_interval:
+    _target_: datetime.timedelta
+    minutes: 5
+  mode: "min"
+  verbose: False
+  dirpath: "${current_experiment_dir}/checkpoints/"
+  filename: "last"
+  auto_insert_metric_name: False
+
+model_summary:
+  _target_: pytorch_lightning.callbacks.RichModelSummary
+  max_depth: 7
+
+rich_progress_bar:
+  _target_: pytorch_lightning.callbacks.RichProgressBar
+
+learning_rate_monitor:
+  _target_: pytorch_lightning.callbacks.LearningRateMonitor
+  logging_interval: "step"
+
+upload_code_as_artifact:
+  _target_: tali.base.callbacks.wandb_callbacks.UploadCodeAsArtifact
+  code_dir: ${code_dir}/
+  use_git: False
+
+log_multi_modal_similarity_prediction_heatmap:
+  _target_: tali.base.callbacks.wandb_callbacks.LogMultiModalPredictionHeatmaps
+  num_samples: 16
