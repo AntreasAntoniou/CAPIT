@@ -66,10 +66,15 @@ def resize_custom(image, target_image_shape, interpolation="bilinear", debug=Fal
 
 
 class CLIPImageTextModel(nn.Module):
-    def __init__(self, model_name_or_path: str):
+    def __init__(self, model_name_or_path: str, pretrained: bool = True):
         super().__init__()
         self.model = CLIPModel.from_pretrained(model_name_or_path)
         self.processor = CLIPProcessor.from_pretrained(model_name_or_path)
+
+        self.pretrained = pretrained
+        if not pretrained:
+            self.model.init_weights()
+
         self.image_shape = [
             3,
             self.processor.feature_extractor.size,

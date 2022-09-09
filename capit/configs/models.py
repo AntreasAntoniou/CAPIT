@@ -9,3 +9,4 @@ from capit.models.image_text_models import CLIPImageTextModel
 class CLIPImageTextMultiModalDatasetConfig:
     _target_: Any = get_module_import_path(CLIPImageTextModel)
     model_name_or_path: str = "openai/clip-vit-base-patch16"
+    pretrained: bool = True
