@@ -940,8 +940,8 @@ The `config.yaml` from `.hydra` folder contains all overriden parameters and sec
 1. The simplest way is to pass datamodule attribute directly to model on initialization:
 
    ```python
-   # ./src/train.py
-   datamodule = hydra.utils.instantiate(config.datamodule)
+   # ./src/train_eval.py
+   datamodule = hydra.utils.instantiate(config.dataloader)
    model = hydra.utils.instantiate(config.base_model, some_param=datamodule.some_param)
    ```
 
@@ -950,8 +950,8 @@ The `config.yaml` from `.hydra` folder contains all overriden parameters and sec
 2. If you only want to access datamodule config, you can simply pass it as an init parameter:
 
    ```python
-   # ./src/train.py
-   model = hydra.utils.instantiate(config.base_model, dm_conf=config.datamodule, _recursive_=False)
+   # ./src/train_eval.py
+   model = hydra.utils.instantiate(config.base_model, dm_conf=config.dataloader, _recursive_=False)
    ```
 
    Now you can access any datamodule config part like this:

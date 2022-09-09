@@ -1,0 +1,10 @@
+defaults:
+  - optimizer_config: adam.yaml
+  - lr_scheduler_config: cosine_annealing.yaml
+
+_target_: capit.models.systems.ModusPrime
+
+embedding_output_features: 512
+num_train_samples: ${datamodule.dataloader_config.train_num_samples}
+batch_size: ${batch_size}
+logit_scale: 14.2857142857

@@ -1,0 +1,40 @@
+_target_: capit.data.hub.TALIDataModule
+
+dataset_config:
+  dataset_dir_config:
+    train: ${train_data_dir}
+    val: ${val_data_dir}
+    test: ${test_data_dir}
+  using_pre_sampled_split: True
+  dataset_size_identifier: base
+  dataset_name: ${datamodule.dataset_config.dataset_size_identifier}-capit
+  modality_config:
+    image: True
+    audio: True
+    video: True
+    text: True
+    name: v.${datamodule.dataset_config.modality_config.video}-a.${datamodule.dataset_config.modality_config.audio}-t.${datamodule.dataset_config.modality_config.text}-i.${datamodule.dataset_config.modality_config.image}
+  rescan_paths: False
+  num_video_frames_per_datapoint: 10
+  num_audio_frames_per_datapoint: 220500
+  num_audio_sample_rate: 44100
+  image_shape:
+    channels: 3
+    width: 288
+    height: 176
+  text_context_length: 77
+dataloader_config:
+  batch_size: ${batch_size}
+  persistent_workers: False
+  pin_memory: True
+  prefetch_factor: 2
+  num_workers: 2
+  shuffle_train: True
+  shuffle_eval: False
+  train_start_index: 0
+  val_start_index: 0
+  test_start_index: 0
+  train_num_samples: 200000000
+  val_num_samples: 100
+  test_num_samples: 100
+  use_dummy_dataloader: False

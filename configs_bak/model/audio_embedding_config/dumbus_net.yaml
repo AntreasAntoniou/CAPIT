@@ -1,0 +1,2 @@
+_target_: capit.models.auto_builder.transformers.AutoDumbNet
+embedding_output_features: 512

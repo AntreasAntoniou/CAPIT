@@ -1,0 +1,49 @@
+model_checkpoint_eval:
+  _target_: pytorch_lightning.callbacks.ModelCheckpoint
+  monitor: validation/overall_cross_entropy_epoch # name of the logged metric which determines when model is improving
+  mode: "min" # "max" means higher metric value is better, can be also "min"
+  save_top_k: 3 # save k best models (determined by above metric)
+  save_last: False # additionaly always save model from last epoch
+  verbose: False
+  dirpath: "${current_experiment_dir}/checkpoints/"
+  filename: "eval_epoch"
+  auto_insert_metric_name: False
+
+model_checkpoint_train:
+  _target_: pytorch_lightning.callbacks.ModelCheckpoint
+  monitor: training/overall_cross_entropy_step
+  save_on_train_epoch_end: True
+  save_top_k: 0
+  save_last: true
+  train_time_interval:
+    _target_: datetime.timedelta
+    minutes: 15
+  mode: "min"
+  verbose: False
+  dirpath: "${current_experiment_dir}/checkpoints/"
+  filename: "last"
+  auto_insert_metric_name: False
+
+model_summary:
+  _target_: pytorch_lightning.callbacks.RichModelSummary
+  max_depth: 7
+
+rich_progress_bar:
+  _target_: pytorch_lightning.callbacks.TQDMProgressBar
+  refresh_rate: 1
+  process_position: 0
+
+learning_rate_monitor:
+  _target_: pytorch_lightning.callbacks.LearningRateMonitor
+  logging_interval: "step"
+
+#validate_on_train_start:
+#  _target_: capit.base.callbacks.pytorch_lightning_custom.RunValidationOnTrainStart
+#gs_file_monitor:
+#  _target_: capit.base.callbacks.cloud_storage_callbacks.GoogleStorageBucketRSyncClient
+#  bucket_name: 'capit-experiments'
+#  experiments_root_dir: ${current_experiment_dir}
+#  experiment_name: ${name}
+#  exclude_list: [.git/*]
+#  options_list: ['r', 'd', 'u', 'e']
+#  resume: ${resume}
