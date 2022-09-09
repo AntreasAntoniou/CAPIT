@@ -63,7 +63,7 @@ class TrainingEvaluationAgent(LightningModule):
         self.collect_metrics_step(output_dict.metrics, phase_name="validation")
 
     def test_step(self, batch, batch_idx):
-        opt_loss, output_dict = self.learner.step(
+        opt_loss, output_dict = self.model.step(
             batch,
             batch_idx,
         )
