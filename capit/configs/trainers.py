@@ -16,8 +16,8 @@ class BaseTrainer:
     enable_checkpointing: bool = True
     default_root_dir: str = CURRENT_EXPERIMENT_DIR
     enable_progress_bar: bool = True
-    val_check_interval: float = 0.02
-    max_steps: int = 10000
+    val_check_interval: float = 0.001
+    max_steps: int = 1000000
     log_every_n_steps: int = 1
     precision: int = 32
     num_sanity_val_steps: int = 2
