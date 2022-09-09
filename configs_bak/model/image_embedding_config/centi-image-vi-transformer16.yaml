@@ -1,6 +1,0 @@
-defaults:
-  - vi-transformer16.yaml
-
-config:
-  transformer_num_filters: 192
-  transformer_dim_feedforward: 768

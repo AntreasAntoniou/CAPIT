@@ -1,5 +1,0 @@
-defaults:
-  - resnet50.yaml
-
-config:
-  vision_width: 128

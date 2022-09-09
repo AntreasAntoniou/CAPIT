@@ -1,7 +1,0 @@
-_target_: torch.optim.lr_scheduler.CyclicLR
-base_lr: 0.
-max_lr: 0.1
-step_size_up: 5
-step_size_down: 5
-gamma: 2.
-verbose: false

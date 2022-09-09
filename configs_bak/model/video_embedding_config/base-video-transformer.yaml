@@ -1,5 +1,0 @@
-defaults:
-  - video-transformer.yaml
-config:
-  transformer_dim_feedforward: 2048
-  transformer_num_filters: 512

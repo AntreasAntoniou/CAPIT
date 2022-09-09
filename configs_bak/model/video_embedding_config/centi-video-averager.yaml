@@ -1,5 +1,0 @@
-
-_target_: capit.models.auto_builder.transformers.AutoAverager
-config:
-  embedding_output_features: 512
-  dim: 1

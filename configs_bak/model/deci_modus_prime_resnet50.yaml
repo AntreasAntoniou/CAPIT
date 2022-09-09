@@ -1,9 +1,0 @@
-defaults:
-  - modus_prime.yaml
-  - image_embedding_config: deci-image-resnet50.yaml
-  - audio_embedding_config: deci-audio-convformer.yaml
-  - text_embedding_config: deci-text-transformer.yaml
-  - video_embedding_config: deci-video-transformer.yaml
-
-
-name: deci_resnet50
