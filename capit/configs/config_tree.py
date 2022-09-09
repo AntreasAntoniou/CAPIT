@@ -61,6 +61,7 @@ class Config:
     # disable python warnings if they annoy you
     ignore_warnings: bool = True
     logging_level: str = "INFO"
+    prefix: str = ""
     # evaluate on test set, using best model weights achieved during training
     # lightning chooses best weights based on metric specified in checkpoint
     # callback
@@ -83,7 +84,7 @@ class Config:
     defaults: List[Any] = field(default_factory=lambda: defaults)
     overrides: List[Any] = field(default_factory=lambda: overrides)
     name: str = (
-        "${remove_redundant_words:${lower:${last_bit:"
+        "${prefix}-${remove_redundant_words:${lower:${last_bit:"
         "${datamodule.dataset_config._target_}}-"
         "${last_bit:${optimizer._target_}}-${model.model_name_or_path}-"
         "${seed}}}"

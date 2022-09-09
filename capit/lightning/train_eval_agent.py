@@ -73,6 +73,8 @@ class TrainingEvaluationAgent(LightningModule):
         self.optimizer = instantiate(
             config=self.optimizer_config, params=self.parameters(), _recursive_=False
         )
+        for key, value in self.named_parameters():
+            log.info(f"Parameter {key} requires grad {value.requires_grad}")
 
     def collect_metrics_step(self, metrics_dict, phase_name):
         for metric_key, computed_value in metrics_dict.items():

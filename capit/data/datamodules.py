@@ -83,7 +83,7 @@ class InstagramImageTextDataModule(DataModule):
                 set_name=SplitType.VAL,
                 image_transforms=self.transform_eval.image_transforms,
                 text_transforms=self.transform_eval.text_transforms,
-                num_episodes=1000,
+                num_episodes=100,
             )
 
         elif stage == "validate":
@@ -92,7 +92,7 @@ class InstagramImageTextDataModule(DataModule):
                 set_name=SplitType.VAL,
                 image_transforms=self.transform_eval.image_transforms,
                 text_transforms=self.transform_eval.text_transforms,
-                num_episodes=1000,
+                num_episodes=100,
             )
 
         # Assign test dataset for use in dataloader(s)
