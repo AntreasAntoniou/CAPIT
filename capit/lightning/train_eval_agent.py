@@ -1,8 +1,8 @@
-from typing import Any, Dict
+from typing import Any
 
 import torch
 from hydra.utils import instantiate
-from pytorch_lightning import LightningModule, LightningDataModule
+from pytorch_lightning import LightningDataModule, LightningModule
 
 from capit.base.utils import get_logger, pretty_config
 
@@ -70,11 +70,14 @@ class TrainingEvaluationAgent(LightningModule):
         self.collect_metrics_step(output_dict.metrics, phase_name="test")
 
     def configure_optimizers(self):
-        self.optimizer = instantiate(
-            config=self.optimizer_config, params=self.parameters(), _recursive_=False
+        optimizer = instantiate(
+            config=self.optimizer_config,
+            params=self.model.parameters(),
+            _recursive_=False,
         )
         for key, value in self.named_parameters():
             log.info(f"Parameter {key} requires grad {value.requires_grad}")
+        return optimizer
 
     def collect_metrics_step(self, metrics_dict, phase_name):
         for metric_key, computed_value in metrics_dict.items():

@@ -1,28 +1,21 @@
 import os
 import pathlib
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import hydra
 import pytorch_lightning
 import torch
 import wandb
-
-from capit.base.utils import pretty_config
-from capit.lightning.train_eval_agent import TrainingEvaluationAgent
-from minigate.datamodules.base import DataModule
-from omegaconf import DictConfig
-from pytorch_lightning import (
-    Callback,
-    LightningDataModule,
-    LightningModule,
-    Trainer,
-    seed_everything,
-)
+from omegaconf import DictConfig, OmegaConf
+from pytorch_lightning import Callback, LightningDataModule, Trainer, seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.tuner.tuning import Tuner
 from wandb.util import generate_id
 
 from capit.base import utils
+from capit.base.utils.typing_utils import get_module_import_path
+from capit.configs.callbacks import LogConfigInformation
+from capit.lightning.train_eval_agent import TrainingEvaluationAgent
 
 log = utils.get_logger(__name__)
 
@@ -99,13 +92,18 @@ def train_eval(config: DictConfig):
         for _, cb_conf in config.callbacks.items():
             if "_target_" in cb_conf:
                 if (
-                    cb_conf["_target_"]
-                    == "tali.base.callbacks.wandb_callbacks.LogConfigInformation"
+                    cb_conf["_target_"].split(".")[-1]
+                    == get_module_import_path(LogConfigInformation).split(".")[-1]
                 ):
-                    cb_conf["config"] = dict(config)
-                    log.info(f"Instantiating callback <{cb_conf._target_}>")
+                    log.info(
+                        f"Instantiating config collection callback <{cb_conf._target_}>"
+                    )
+                    cb_conf["config"] = OmegaConf.to_container(config, resolve=True)
                     callbacks.append(
-                        hydra.utils.instantiate(cb_conf, _recursive_=False)
+                        hydra.utils.instantiate(
+                            cb_conf,
+                            _recursive_=False,
+                        )
                     )
                 else:
                     log.info(f"Instantiating callback <{cb_conf._target_}>")

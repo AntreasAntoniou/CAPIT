@@ -10,9 +10,9 @@ from pytorch_lightning.callbacks import (
 )
 
 from capit.base.callbacks.wandb_callbacks import (
-    UploadCodeAsArtifact,
-    LogGrads,
     LogConfigInformation,
+    LogGrads,
+    UploadCodeAsArtifact,
 )
 from capit.base.utils.typing_utils import get_module_import_path
 from capit.configs.string_variables import CHECKPOINT_DIR

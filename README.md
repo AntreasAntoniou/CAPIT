@@ -1271,7 +1271,6 @@ Change name of the `src` folder to your project name and add `setup.py` file:
 ```python
 from setuptools import find_packages, setup
 
-
 setup(
     name="src",  # change "src" folder name to your project name
     version="0.0.0",
@@ -1303,8 +1302,9 @@ pip install git+git://github.com/YourGithubName/your-repo-name.git --upgrade
 So any file can be easily imported into any other file like so:
 
 ```python
-from project_name.models.mnist_module import MNISTLitModule
 from project_name.datamodules.mnist_datamodule import MNISTDataModule
+from project_name.models.mnist_module import MNISTLitModule
+
 ```
 
 </details>

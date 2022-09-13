@@ -7,7 +7,6 @@ CURRENT_EXPERIMENT_DIR = "${current_experiment_dir}"
 CODE_DIR = "${code_dir}"
 EXPERIMENT_NAME = "${name}"
 BATCH_SIZE = "${batch_size}"
-NUM_TRAIN_SAMPLES = "${num_train_samples}"
 CHECKPOINT_DIR = "${current_experiment_dir}/checkpoints/"
 
 

@@ -1,15 +1,11 @@
-import functools
 from dataclasses import dataclass
-from typing import Optional, Any
+from typing import Any, Optional
 
 from hydra.utils import instantiate
 from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS
 
-from capit.base.utils.typing_utils import get_module_import_path
-from capit.configs.base import DataLoaderConfig, DatasetConfig
-from capit.configs.datasets import InstagramImageTextMultiModalDatasetConfig
 from capit.data.transforms import image_transforms_base
 
 

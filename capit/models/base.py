@@ -1,12 +1,9 @@
 from __future__ import print_function
 
 import logging
-from collections import OrderedDict
 
 import torch
 import torch.nn as nn
-
-from transformers.modeling_outputs import BaseModelOutputWithPooling
 
 
 class BaseStyleLayer(nn.Module):

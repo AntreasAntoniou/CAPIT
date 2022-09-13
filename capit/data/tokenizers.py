@@ -10,12 +10,15 @@ log = get_logger(__name__, set_default_handler=False)
 
 
 class HuggingFaceBPETokenizer(nn.Module):
-    def __init__(self, context_length):
+    def __init__(
+        self,
+        context_length,
+        name_or_path="openai/clip-vit-base-patch16",
+        parallel=False,
+    ):
         super(HuggingFaceBPETokenizer, self).__init__()
-        os.environ["TOKENIZERS_PARALLELISM"] = "false"
-        self.tokenizer = CLIPTokenizerFast.from_pretrained(
-            "openai/clip-vit-base-patch16"
-        )
+        os.environ["TOKENIZERS_PARALLELISM"] = f"{parallel}"
+        self.tokenizer = CLIPTokenizerFast.from_pretrained(name_or_path)
         self.context_length = context_length
 
     def forward(self, x):

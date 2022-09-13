@@ -1,20 +1,12 @@
-import os
 from pathlib import Path
-from typing import Any, Dict, List
 
-import cv2
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sn
-import torch
 import wandb
 from pytorch_lightning import Callback, LightningModule, Trainer
+from pytorch_lightning.callbacks import ModelSummary
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
-from sklearn import metrics
-from sklearn.metrics import f1_score, precision_score, recall_score
 from torch.optim import Optimizer
-from wandb.plots.heatmap import heatmap
 
 from capit.base import utils
 
@@ -140,7 +132,9 @@ class LogConfigInformation(Callback):
         self.config = config
 
     @rank_zero_only
-    def on_fit_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+    def on_sanity_check_start(
+        self, trainer: Trainer, pl_module: LightningModule
+    ) -> None:
         if not self.done:
             logger = get_wandb_logger(trainer=trainer)
 
@@ -148,10 +142,10 @@ class LogConfigInformation(Callback):
 
             hparams = {
                 "trainer": trainer_hparams,
+                "config": self.config,
             }
 
             logger.log_hyperparams(hparams)
-            logger.log_hyperparams(self.config)
             self.done = True
 
 
@@ -168,4 +162,4 @@ class PostBuildSummary(Callback):
         self, trainer: "Trainer", pl_module: "LightningModule"
     ) -> None:
         summary = ModelSummary(model=pl_module, max_depth=self.max_depth)
-        logging.info(summary)
+        log.info(summary)

@@ -1,5 +1,5 @@
-from dataclasses import MISSING, dataclass
-from typing import Any, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Optional
 
 from capit.base.utils.typing_utils import get_module_import_path
 from capit.configs.base import DatasetConfig
@@ -22,7 +22,7 @@ class InstagramImageTextMultiModalDatasetConfig:
     _target_: Any = get_module_import_path(InstagramImageTextMultiModalDataset)
     set_name: str = SplitType.TRAIN
     reset_cache: bool = False
-    num_episodes: int = 1000000
+    num_episodes: int = 10000000
     limit_num_samples: Optional[int] = None
     image_transforms: Optional[Any] = (None,)
     text_transforms: Optional[Any] = (None,)

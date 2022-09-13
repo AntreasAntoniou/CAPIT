@@ -1,5 +1,6 @@
-from torchvision import transforms
 import torch.nn as nn
+from torchvision import transforms
+
 from capit.data.tokenizers import HuggingFaceBPETokenizer
 
 tokenizer = HuggingFaceBPETokenizer(context_length=77)
@@ -22,8 +23,8 @@ class ToThreeChannels(nn.Module):
 def image_transforms_base():
     return transforms.Compose(
         [
-            transforms.ToTensor(),
             transforms.Resize((224, 224)),
+            transforms.ToTensor(),
             ToThreeChannels(),
         ]
     )

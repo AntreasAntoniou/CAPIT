@@ -2,19 +2,18 @@ import os
 from dataclasses import MISSING, dataclass, field
 from typing import Any, List, Optional
 
-from hydra.core.config_store import ConfigStore
 from omegaconf import OmegaConf
 
 from capit.base.utils import get_logger
 from capit.configs.callbacks import (
-    model_checkpoint_eval,
-    model_checkpoint_train,
+    LearningRateMonitor,
+    LogConfigInformation,
+    LogGrads,
     ModelSummaryConfig,
     RichProgressBar,
-    LearningRateMonitor,
     UploadCodeAsArtifact,
-    LogGrads,
-    LogConfigInformation,
+    model_checkpoint_eval,
+    model_checkpoint_train,
 )
 
 log = get_logger(__name__)
@@ -28,7 +27,6 @@ defaults = [
     {"trainer": "base"},
     {"mode": "base"},
     {"hydra": "custom_logging_path"},
-    {"_self_": None},
 ]
 
 overrides = []
@@ -43,7 +41,6 @@ OmegaConf.register_new_resolver(
 
 @dataclass
 class Config:
-    _self_: Any = MISSING
     callbacks: Any = MISSING
     logger: Any = MISSING
     model: Any = MISSING
@@ -53,7 +50,7 @@ class Config:
     mode: Any = MISSING
     hydra: Any = MISSING
 
-    resume: bool = True
+    resume: bool = False
     checkpoint_path: Optional[str] = None
     # pretty print config at the start of the run using Rich library
     print_config: bool = True
@@ -66,11 +63,9 @@ class Config:
     # lightning chooses best weights based on metric specified in checkpoint
     # callback
     test_after_training: bool = True
-
     batch_size: int = 1
     # seed for random number generators in learn2learn_hub, numpy and python.random
     seed: int = 0
-    num_train_samples: int = 25000
     # top level argument that sets all the downstream configs to run an
     # experiment on this many iterations
 
@@ -84,11 +79,18 @@ class Config:
     defaults: List[Any] = field(default_factory=lambda: defaults)
     overrides: List[Any] = field(default_factory=lambda: overrides)
     name: str = (
-        "${prefix}-${remove_redundant_words:${lower:${last_bit:"
-        "${datamodule.dataset_config._target_}}-"
-        "${last_bit:${optimizer._target_}}-${model.model_name_or_path}-"
-        "${seed}}}"
+        "${prefix}-"
+        "${remove_redundant_words:"
+        "${lower:"
+        "${last_bit:"
+        "${datamodule.dataset_config._target_}}}}-"
+        "${last_bit:${optimizer._target_}}-"
+        "${model.model_name_or_path}-"
+        "pretrained=${model.pretrained}-"
+        "fine_tune=${model.fine_tunable}-"
+        "${seed}"
     )
+
     current_experiment_dir: str = "${root_experiment_dir}/${name}"
     code_dir: str = "${hydra:runtime.cwd}"
 

@@ -1,16 +1,6 @@
-import logging
-from itertools import combinations
-from typing import Any, Dict, List, Optional, Union
-
-import hydra.utils
-import numpy as np
 import torch
-from pytorch_lightning import LightningModule
-from torchmetrics import Metric
-from torchmetrics.classification.accuracy import Accuracy
 
 from capit.base import utils
-
 
 log = utils.get_logger(__name__)
 
