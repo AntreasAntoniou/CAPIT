@@ -27,8 +27,9 @@ def collect_config_store():
     from capit.configs.trainers import BaseTrainer, DDPTrainer, DPTrainer, MPSTrainer
 
     config_store = ConfigStore.instance()
+    ###################################################################################
     config_store.store(name="config", node=Config)
-
+    ###################################################################################
     config_store.store(
         group="callbacks",
         name="base",
@@ -40,7 +41,7 @@ def collect_config_store():
         name="wandb",
         node=wandb_callbacks,
     )
-
+    ###################################################################################
     config_store.store(
         group="logger",
         name="wandb",
@@ -48,34 +49,43 @@ def collect_config_store():
     )
 
     config_store.store(
-        group="logger", name="tensorboard", node=dict(logger=TensorboardLoggerConfig())
+        group="logger", name="tb", node=dict(logger=TensorboardLoggerConfig())
     )
 
+    config_store.store(
+        group="logger",
+        name="wandb+tb",
+        node=dict(
+            tensorboard_logger=TensorboardLoggerConfig(),
+            wandb_logger=WeightsAndBiasesLoggerConfig(),
+        ),
+    )
+    ###################################################################################
     config_store.store(
         group="model",
         name="clip-image-text",
         node=CLIPImageTextMultiModalDatasetConfig,
     )
-
+    ###################################################################################
     config_store.store(
         group="datamodule",
         name="InstagramImageTextMultiModal",
         node=InstagramImageTextMultiModalDataModuleConfig,
     )
-
+    ###################################################################################
     config_store.store(group="trainer", name="base", node=BaseTrainer)
     config_store.store(group="trainer", name="gpu-dp", node=DPTrainer)
     config_store.store(group="trainer", name="gpu-ddp", node=DDPTrainer)
     config_store.store(group="trainer", name="mps", node=MPSTrainer)
-
+    ###################################################################################
     config_store = add_hydra_configs(config_store)
-
+    ###################################################################################
     config_store.store(
         group="mode",
         name="base",
         node=BaseMode(),
     )
-
+    ###################################################################################
     config_store.store(group="optimizer", name="AdamW", node=AdamWOptimizerConfig)
 
     return config_store
