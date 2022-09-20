@@ -19,7 +19,7 @@ mamba install einops -y
 mamba install torchmetrics -y
 mamba install ffmpeg -y
 mamba install tensorflow tensorflow-datasets -y
-echo yes | pip install hub timm jsonlint nvidia-ml-py3 testresources hydra hydra-core hydra-colorlog hub hydra-optuna-sweeper dotted_dict ray higher --upgrade
+echo yes | pip install wandb opencv-contrib-python hub timm hydra hydra-core dotted_dict higher --upgrade
 echo yes | pip install git+https://github.com/openai/CLIP.git@main
 echo yes | pip install git+https://github.com/AntreasAntoniou/TALI.git@main
 echo yes | pip install learn2learn
