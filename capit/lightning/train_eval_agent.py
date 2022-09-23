@@ -47,7 +47,7 @@ class TrainingEvaluationAgent(LightningModule):
     def forward(self, batch):
         return self.model.forward(batch, batch_idx=0)
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch, batch_idx, top_level_pl_module=None):
         opt_loss, output_dict = self.model.step(
             batch,
             batch_idx,
