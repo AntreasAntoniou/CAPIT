@@ -53,6 +53,10 @@ class InstagramImageTextDataModule(DataModule):
         self,
         dataset_config: Any,
         data_loader_config: Any,
+        shuffle_train: bool = True,
+        num_episodes_train: int = 100000,
+        num_episodes_val: int = 100,
+        num_episodes_test: int = 1000,
         transform_train: ImageTextTransformConfig = ImageTextTransformConfig(),
         transform_eval: ImageTextTransformConfig = ImageTextTransformConfig(),
     ):
@@ -62,6 +66,10 @@ class InstagramImageTextDataModule(DataModule):
 
         self.transform_train = transform_train
         self.transform_eval = transform_eval
+        self.shuffle_train = shuffle_train
+        self.num_episodes_train = num_episodes_train
+        self.num_episodes_val = num_episodes_val
+        self.num_episodes_test = num_episodes_test
 
     def setup(self, stage: Optional[str] = None):
 
@@ -71,7 +79,7 @@ class InstagramImageTextDataModule(DataModule):
                 set_name=SplitType.TRAIN,
                 image_transforms=self.transform_train.image_transforms,
                 text_transforms=self.transform_train.text_transforms,
-                num_episodes=1000000,
+                num_episodes=self.num_episodes_train,
             )
 
             self.val_set = instantiate(
@@ -79,7 +87,7 @@ class InstagramImageTextDataModule(DataModule):
                 set_name=SplitType.VAL,
                 image_transforms=self.transform_eval.image_transforms,
                 text_transforms=self.transform_eval.text_transforms,
-                num_episodes=100,
+                num_episodes=self.num_episodes_val,
             )
 
         elif stage == "validate":
@@ -88,7 +96,7 @@ class InstagramImageTextDataModule(DataModule):
                 set_name=SplitType.VAL,
                 image_transforms=self.transform_eval.image_transforms,
                 text_transforms=self.transform_eval.text_transforms,
-                num_episodes=100,
+                num_episodes=self.num_episodes_val,
             )
 
         # Assign test dataset for use in dataloader(s)
@@ -98,7 +106,7 @@ class InstagramImageTextDataModule(DataModule):
                 set_name=SplitType.TEST,
                 image_transforms=self.transform_eval.image_transforms,
                 text_transforms=self.transform_eval.text_transforms,
-                num_episodes=1000,
+                num_episodes=self.num_episodes_test,
             )
 
         else:
@@ -107,7 +115,7 @@ class InstagramImageTextDataModule(DataModule):
     def train_dataloader(self):
 
         return instantiate(
-            self.data_loader_config, dataset=self.train_set, shuffle=True
+            self.data_loader_config, dataset=self.train_set, shuffle=self.shuffle_train
         )
 
     def val_dataloader(self):
