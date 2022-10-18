@@ -73,7 +73,6 @@ model_checkpoint_eval: ModelCheckpointingConfig = ModelCheckpointingConfig(
 )
 
 model_checkpoint_train = ModelCheckpointingConfig(
-    _target_=get_module_import_path(ModelCheckpoint),
     monitor="training/loss_epoch",
     save_on_train_epoch_end=True,
     save_top_k=0,
