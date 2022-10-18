@@ -131,7 +131,7 @@ class LogConfigInformation(Callback):
         self.config = config
 
     @rank_zero_only
-    def on_init_start(
+    def on_batch_start(
         self, trainer: Trainer
     ) -> None:
         if not self.done:
