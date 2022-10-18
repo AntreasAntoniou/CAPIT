@@ -299,7 +299,7 @@ class InstagramImageTextMultiModalDataset(Dataset):
             self._idx_to_user_name = self._idx_to_user_name[start_idx:]
 
     def __getitem__(self, index):
-        actual_index = index % len(self._idx_to_user_name)
+        actual_index = index % 10
         user_name = self._idx_to_user_name[actual_index]
         rng = np.random.RandomState(seed=index)
         post_id = rng.choice(self._user_to_post_dict[user_name])
