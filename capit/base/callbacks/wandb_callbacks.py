@@ -132,7 +132,7 @@ class LogConfigInformation(Callback):
 
     @rank_zero_only
     def on_batch_start(
-        self, trainer: Trainer
+        self, trainer: Trainer, pl_module: LightningModule
     ) -> None:
         if not self.done:
             logger = get_wandb_logger(trainer=trainer)
