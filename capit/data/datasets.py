@@ -301,7 +301,7 @@ class InstagramImageTextMultiModalDataset(Dataset):
     def __getitem__(self, index):
         actual_index = 0
         user_name = self._idx_to_user_name[actual_index]
-        rng = np.random.RandomState(seed=0)
+        rng = np.random.RandomState(seed=index)
         post_id = rng.choice(self._user_to_post_dict[user_name])
 
         image_path, info_path = generate_post_paths_from_user_name_and_post_id(
