@@ -2,13 +2,12 @@ from pathlib import Path
 
 import numpy as np
 import wandb
+from capit.base import utils
 from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.callbacks import ModelSummary
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
 from torch.optim import Optimizer
-
-from capit.base import utils
 
 log = utils.get_logger(__name__)
 
@@ -132,7 +131,7 @@ class LogConfigInformation(Callback):
         self.config = config
 
     @rank_zero_only
-    def on_sanity_check_start(
+    def on_init_start(
         self, trainer: Trainer, pl_module: LightningModule
     ) -> None:
         if not self.done:
