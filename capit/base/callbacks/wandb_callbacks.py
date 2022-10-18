@@ -132,7 +132,7 @@ class LogConfigInformation(Callback):
 
     @rank_zero_only
     def on_init_start(
-        self, trainer: Trainer, pl_module: LightningModule
+        self, trainer: Trainer
     ) -> None:
         if not self.done:
             logger = get_wandb_logger(trainer=trainer)

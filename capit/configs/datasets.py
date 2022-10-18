@@ -8,7 +8,7 @@ from capit.data.datasets import (ChallengeSamplesSourceTypes, DummyMultiModalDat
 from hydra_zen import builds, hydrated_dataclass
 
 
-@dataclass
+@hydrated_dataclass(target=DummyMultiModalDataset)
 class DummyDatasetConfig(DatasetConfig):
     _target_: Any = get_module_import_path(DummyMultiModalDataset)
 
