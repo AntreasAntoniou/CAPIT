@@ -3,12 +3,8 @@ from typing import Any, Optional
 
 from capit.base.utils.typing_utils import get_module_import_path
 from capit.configs.base import DatasetConfig
-from capit.data.datasets import (
-    ChallengeSamplesSourceTypes,
-    DummyMultiModalDataset,
-    InstagramImageTextMultiModalDataset,
-    SplitType,
-)
+from capit.data.datasets import (ChallengeSamplesSourceTypes, DummyMultiModalDataset,
+                                 InstagramImageTextMultiModalDataset, SplitType)
 
 
 @dataclass
@@ -28,7 +24,7 @@ class InstagramImageTextMultiModalDatasetConfig:
     text_transforms: Optional[Any] = (None,)
     max_num_collection_images_per_episode: int = 1
     max_num_query_images_per_episode: int = 100
-    query_image_source: str = ChallengeSamplesSourceTypes.WITHIN_USER
+    query_image_source: str = ChallengeSamplesSourceTypes.ACROSS_USERS
 
 
 @dataclass
