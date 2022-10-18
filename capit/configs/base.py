@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from torch.utils.data import DataLoader
-
 from capit.base.utils.typing_utils import get_module_import_path
 from capit.configs.string_variables import BATCH_SIZE
+from hydra_zen import hydrated_dataclass
+from torch.utils.data import DataLoader
 
 
 @dataclass
@@ -22,7 +22,7 @@ class ModalityConfig:
     text: bool = True
 
 
-@dataclass
+@hydrated_dataclass(target=DataLoader)
 class DataLoaderConfig:
     dataset: Any = None
     _target_: str = get_module_import_path(DataLoader)

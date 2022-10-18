@@ -2,29 +2,21 @@ from dataclasses import MISSING, dataclass
 from datetime import timedelta
 from typing import Dict, Optional
 
-from pytorch_lightning.callbacks import (
-    LearningRateMonitor,
-    ModelCheckpoint,
-    RichModelSummary,
-    TQDMProgressBar,
-)
-
-from capit.base.callbacks.wandb_callbacks import (
-    LogConfigInformation,
-    LogGrads,
-    UploadCodeAsArtifact,
-)
+from capit.base.callbacks.wandb_callbacks import (LogConfigInformation, LogGrads,
+                                                  UploadCodeAsArtifact)
 from capit.base.utils.typing_utils import get_module_import_path
 from capit.configs.string_variables import CHECKPOINT_DIR
+from hydra_zen import hydrated_dataclass
+from pytorch_lightning.callbacks import (LearningRateMonitor, ModelCheckpoint,
+                                         RichModelSummary, TQDMProgressBar)
 
 
-@dataclass
+@hydrated_dataclass(target=timedelta)
 class TimerConfig:
-    _target_: str = get_module_import_path(timedelta)
-    minutes: int = 15
+    minutes: int = 60
 
 
-@dataclass
+@hydrated_dataclass(target=ModelCheckpoint)
 class ModelCheckpointingConfig:
     monitor: str = MISSING
     mode: str = MISSING
@@ -35,44 +27,37 @@ class ModelCheckpointingConfig:
     auto_insert_metric_name: bool = MISSING
     save_on_train_epoch_end: Optional[bool] = None
     train_time_interval: Optional[TimerConfig] = None
-    _target_: str = get_module_import_path(ModelCheckpoint)
     dirpath: str = CHECKPOINT_DIR
 
 
-@dataclass
+@hydrated_dataclass(target=RichModelSummary)
 class ModelSummaryConfig:
-    _target_: str = get_module_import_path(RichModelSummary)
     max_depth: int = 7
 
 
-@dataclass
+@hydrated_dataclass(target=TQDMProgressBar)
 class RichProgressBar:
-    _target_: str = get_module_import_path(TQDMProgressBar)
     refresh_rate: int = 1
     process_position: int = 0
 
 
-@dataclass
+@hydrated_dataclass(target=LearningRateMonitor)
 class LearningRateMonitor:
-    _target_: str = get_module_import_path(LearningRateMonitor)
     logging_interval: str = "step"
 
 
-@dataclass
+@hydrated_dataclass(target=UploadCodeAsArtifact)
 class UploadCodeAsArtifact:
-    _target_: str = get_module_import_path(UploadCodeAsArtifact)
     code_dir: str = "${code_dir}"
 
 
-@dataclass
+@hydrated_dataclass(target=LogGrads)
 class LogGrads:
-    _target_: str = get_module_import_path(LogGrads)
     refresh_rate: int = 100
 
 
-@dataclass
+@hydrated_dataclass(target=LogConfigInformation)
 class LogConfigInformation:
-    _target_: str = get_module_import_path(LogConfigInformation)
     config: Optional[Dict] = None
 
 
