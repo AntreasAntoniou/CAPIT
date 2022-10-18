@@ -215,6 +215,7 @@ class InstagramImageTextMultiModalDataset(Dataset):
         max_num_collection_images_per_episode: int = 50,
         max_num_query_images_per_episode: int = 50,
         query_image_source: str = ChallengeSamplesSourceTypes.WITHIN_USER,
+        restrict_num_users: Optional[int] = None,
     ):
         super(InstagramImageTextMultiModalDataset, self).__init__()
 
@@ -230,6 +231,7 @@ class InstagramImageTextMultiModalDataset(Dataset):
         )
         self.max_num_query_images_per_episode = max_num_query_images_per_episode
         self.query_image_source = query_image_source.lower()
+        self.restrict_num_users = restrict_num_users
 
         post_image_dir = os.path.join(self.dataset_dir, "image")
         post_info_dir = os.path.join(self.dataset_dir, "info")
@@ -299,7 +301,10 @@ class InstagramImageTextMultiModalDataset(Dataset):
             self._idx_to_user_name = self._idx_to_user_name[start_idx:]
 
     def __getitem__(self, index):
-        actual_index = index % 10
+        if self.restrict_num_users is not None:
+            actual_index = index % self.restrict_num_users
+        else:
+            actual_index = index % len(self._idx_to_user_name)
         user_name = self._idx_to_user_name[actual_index]
         rng = np.random.RandomState(seed=index)
         post_id = rng.choice(self._user_to_post_dict[user_name])
