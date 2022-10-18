@@ -92,8 +92,7 @@ def train_eval(config: DictConfig):
         for _, cb_conf in config.callbacks.items():
             if "_target_" in cb_conf:
                 if (
-                    cb_conf["_target_"].split(".")[-1]
-                    == get_module_import_path(LogConfigInformation).split(".")[-1]
+                    "LogConfigInformation" in cb_conf["_target_"]
                 ):
                     log.info(
                         f"Instantiating config collection callback <{cb_conf._target_}>"
