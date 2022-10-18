@@ -8,13 +8,12 @@ from typing import Any, Optional
 import numpy as np
 import torch
 import tqdm
-from dotted_dict import DottedDict
-from PIL import Image
-from torch.utils.data import Dataset
-
 from capit.base.utils.loggers import get_logger
 from capit.base.utils.storage import load_json, save_json
 from capit.configs.base import DatasetDirectoryConfig, ImageShape, ModalityConfig
+from dotted_dict import DottedDict
+from PIL import Image
+from torch.utils.data import Dataset
 
 log = get_logger(__name__)
 
@@ -300,7 +299,7 @@ class InstagramImageTextMultiModalDataset(Dataset):
             self._idx_to_user_name = self._idx_to_user_name[start_idx:]
 
     def __getitem__(self, index):
-        actual_index = index % len(self._idx_to_user_name)
+        actual_index = 0
         user_name = self._idx_to_user_name[actual_index]
         rng = np.random.RandomState(seed=index)
         post_id = rng.choice(self._user_to_post_dict[user_name])
