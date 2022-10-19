@@ -61,12 +61,15 @@ def get_str(x: Any) -> str:
     return "${to_str:" + str(x) + "}"
 
 
-def generate_name(prefix, optimizer, model_name, pretrained, fine_tune, seed) -> str:
+def generate_name(
+    prefix, optimizer, dataset_name, model_name, pretrained, fine_tune, seed
+) -> str:
     process_string_fn = lambda x: get_remove_redundant_words(
         get_lower(get_last_bit(get_remove_slashes(get_str(x))))
     )
     name = f"{process_string_fn(prefix)}_"
     name += f"{process_string_fn(optimizer)}_"
+    name += f"{process_string_fn(dataset_name)}_"
     name += f"{process_string_fn(model_name)}_"
     name += f"{process_string_fn(pretrained)}_"
     name += f"{process_string_fn(fine_tune)}_"
@@ -116,6 +119,7 @@ class Config:
     name: str = generate_name(
         prefix="${prefix}",
         optimizer="${optimizer._target_}",
+        dataset_name="${datamodule.dataset_config.query_image_source}",
         model_name="${model.model_name_or_path}",
         pretrained="${model.pretrained}",
         fine_tune="${model.fine_tunable}",
