@@ -62,11 +62,6 @@ def get_str(x: Any) -> str:
 
 
 def generate_name(prefix, optimizer, model_name, pretrained, fine_tune, seed) -> str:
-    print(
-        f"Generating name for experiment with prefix: {prefix}, optimizer: {optimizer},"
-        f" model_name: {model_name}, pretrained: {pretrained}, fine_tune: {fine_tune},"
-        f" seed: {seed}"
-    )
     process_string_fn = lambda x: get_remove_redundant_words(
         get_lower(get_last_bit(get_remove_slashes(get_str(x))))
     )
