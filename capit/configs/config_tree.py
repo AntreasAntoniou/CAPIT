@@ -50,7 +50,7 @@ def get_remove_redundant_words(x: str) -> str:
 
 
 def generate_name(prefix, optimizer, model_name, pretrained, fine_tune, seed) -> str:
-    log.info(
+    print(
         f"Generating name for experiment with prefix: {prefix}, optimizer: {optimizer},"
         f" model_name: {model_name}, pretrained: {pretrained}, fine_tune: {fine_tune},"
         f" seed: {seed}"
