@@ -109,7 +109,6 @@ def train_eval(config: DictConfig):
                     log.info(f"Instantiating callback <{cb_conf._target_}>")
                     callbacks.append(hydra.utils.instantiate(cb_conf))
 
-    os.environ["WANDB_RESUME"] = "allow"
     # --------------------------------------------------------------------------------
     # Instantiate Experiment Logger
     # --------------------------------------------------------------------------------
