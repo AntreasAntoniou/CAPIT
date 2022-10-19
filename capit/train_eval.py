@@ -11,7 +11,7 @@ from pytorch_lightning import Callback, LightningDataModule, Trainer, seed_every
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.tuner.tuning import Tuner
 from wandb.util import generate_id
-from wandbless.stateless_checkpointing import StatelessCheckpointingWandb
+from wandbless.checkpointing import StatelessCheckpointingWandb
 
 from capit.base import utils
 from capit.base.utils.typing_utils import get_module_import_path
