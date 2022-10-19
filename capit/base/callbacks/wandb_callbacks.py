@@ -166,7 +166,6 @@ class SaveCheckpointsWandb(Callback):
 
         self.wandb_checkpointer.save(
             model=checkpoint,
-            model_name=self.wandb_checkpointer.run.id,
             store_dir=os.environ["MODEL_DIR"],
         )
 
