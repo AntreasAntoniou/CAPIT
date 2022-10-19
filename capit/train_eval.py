@@ -111,20 +111,22 @@ def train_eval(config: DictConfig):
                     log.info(
                         f"Instantiating config collection callback <{cb_conf._target_}>"
                     )
-                    cb_conf["config"] = OmegaConf.to_container(config, resolve=True)
                     callbacks.append(
                         instantiate(
                             cb_conf,
+                            config=OmegaConf.to_container(config, resolve=True),
                             _recursive_=False,
                         )
                     )
 
                 elif "SaveCheckpointsWandb" in cb_conf["_target_"]:
-                    log.info(f"Instantiating <{cb_conf._target_}>")
-                    cb_conf["wandb_checkpointer"] = wandb_checkpointer
+                    log.info(
+                        f"Instantiating <{cb_conf._target_} with {wandb_checkpointer}>"
+                    )
                     callbacks.append(
                         instantiate(
                             cb_conf,
+                            wandb_checkpointer=wandb_checkpointer,
                             _recursive_=False,
                         )
                     )
