@@ -34,19 +34,19 @@ OmegaConf.register_new_resolver(
 
 
 def get_last_bit(x):
-    return "${last_bit:" + x + "}"
+    return "${last_bit:" + str(x) + "}"
 
 
 def get_lower(x):
-    return "${lower:" + x + "}"
+    return "${lower:" + str(x) + "}"
 
 
 def get_remove_slashes(x):
-    return "${remove_slashes:" + x + "}"
+    return "${remove_slashes:" + str(x) + "}"
 
 
 def get_remove_redundant_words(x):
-    return "${remove_redundant_words:" + x + "}"
+    return "${remove_redundant_words:" + str(x) + "}"
 
 
 def generate_name(prefix, optimizer, model_name, pretrained, fine_tune, seed) -> str:
