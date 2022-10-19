@@ -69,7 +69,7 @@ def train_eval(config: DictConfig):
         dir=config.logger.wandb.save_dir,
         config=config,
         project=config.logger.wandb.project,
-        entity=config.logger.wandb.entity,
+        entity=os.environ["WANDB_ENTITY"],
         id=config.logger.wandb.id,
     )
 
