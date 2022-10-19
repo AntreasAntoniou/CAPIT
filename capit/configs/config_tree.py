@@ -37,7 +37,7 @@ def generate_name() -> str:
     return (
         "${remove_slashes:${prefix}-${remove_redundant_words:${lower:${last_bit:"
         "${datamodule.dataset_config._target_}}}}-${last_bit:${optimizer._target_}}-"
-        "${model.model_name_or_path}-pretrained=${model.pretrained}-fine_tune="
+        "${model.model_name_or_path}-pretrained-${model.pretrained}-fine_tune-"
         "${model.fine_tunable}-${seed}}"
     )
 
