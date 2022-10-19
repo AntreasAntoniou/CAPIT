@@ -24,7 +24,7 @@ defaults = [
     {"model": "clip-image-text"},
     {"datamodule": "InstagramImageTextMultiModal"},
     {"optimizer": "AdamW"},
-    {"trainer": "base"},
+    {"trainer": "gpu-dp"},
     {"mode": "base"},
     {"hydra": "custom_logging_path"},
 ]

@@ -16,6 +16,6 @@ class InstagramImageTextMultiModalDataModuleConfig:
     )
     data_loader_config: Any = DataLoaderConfig()
     shuffle_train: bool = True
-    num_episodes_train: int = 100000
+    num_episodes_train: int = 10000000
     num_episodes_val: int = 100
     num_episodes_test: int = 100
