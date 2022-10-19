@@ -61,8 +61,8 @@ def generate_name(prefix, optimizer, model_name, pretrained, fine_tune, seed) ->
     name = f"{process_string_fn(prefix)}_"
     name += f"{process_string_fn(optimizer)}_"
     name += f"{process_string_fn(model_name)}_"
-    name += f"{process_string_fn(pretrained)}_"
-    name += f"{process_string_fn(fine_tune)}_"
+    name += f"{get_lower(pretrained)}_"
+    name += f"{get_lower(fine_tune)}_"
     name += f"{process_string_fn(seed)}"
     return name
 
