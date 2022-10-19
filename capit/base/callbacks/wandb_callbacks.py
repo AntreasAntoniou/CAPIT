@@ -128,10 +128,10 @@ class LogConfigInformation(Callback):
         https://wandb.ai/wandb/wandb-lightning/reports/Image-Classification-using-PyTorch-Lightning--VmlldzoyODk1NzY
     """
 
-    def __init__(self, config=None):
+    def __init__(self, exp_config=None):
         super().__init__()
         self.done = False
-        self.config = config
+        self.exp_config = exp_config
 
     @rank_zero_only
     def on_batch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
@@ -142,7 +142,7 @@ class LogConfigInformation(Callback):
 
             hparams = {
                 "trainer": trainer_hparams,
-                "config": self.config,
+                "config": self.exp_config,
             }
 
             logger.log_hyperparams(hparams)

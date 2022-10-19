@@ -59,7 +59,7 @@ class LogGrads:
 
 @hydrated_dataclass(target=LogConfigInformation)
 class LogConfigInformation:
-    config: Optional[Dict] = None
+    exp_config: Optional[Dict] = None
 
 
 SaveCheckpointsWandb = builds(SaveCheckpointsWandb, populate_full_signature=True)

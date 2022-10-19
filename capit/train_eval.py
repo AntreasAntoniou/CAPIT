@@ -2,7 +2,6 @@ import os
 import pathlib
 from typing import List, Optional
 
-import hydra
 import pytorch_lightning
 import torch
 import wandb
@@ -11,12 +10,9 @@ from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, LightningDataModule, Trainer, seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.tuner.tuning import Tuner
-from wandb.util import generate_id
 from wandbless.checkpointing import StatelessCheckpointingWandb
 
 from capit.base import utils
-from capit.base.utils.typing_utils import get_module_import_path
-from capit.configs.callbacks import LogConfigInformation
 from capit.lightning.train_eval_agent import TrainingEvaluationAgent
 
 log = utils.get_logger(__name__)
@@ -113,8 +109,8 @@ def train_eval(config: DictConfig):
                     )
                     callbacks.append(
                         instantiate(
-                            cb_conf,
-                            config=OmegaConf.to_container(config, resolve=True),
+                            config=cb_conf,
+                            exp_config=OmegaConf.to_container(config, resolve=True),
                             _recursive_=False,
                         )
                     )
@@ -125,7 +121,7 @@ def train_eval(config: DictConfig):
                     )
                     callbacks.append(
                         instantiate(
-                            cb_conf,
+                            config=cb_conf,
                             wandb_checkpointer=wandb_checkpointer,
                             _recursive_=False,
                         )
