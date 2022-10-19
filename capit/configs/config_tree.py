@@ -26,6 +26,7 @@ overrides = []
 
 OmegaConf.register_new_resolver("last_bit", lambda x: x.split(".")[-1])
 OmegaConf.register_new_resolver("lower", lambda x: x.lower())
+OmegaConf.register_new_resolver("remove_slashes", lambda x: x.replace("/", "-"))
 OmegaConf.register_new_resolver(
     "remove_redundant_words",
     lambda x: x.replace("scheme", "").replace("module", "").replace("config", ""),
@@ -34,10 +35,10 @@ OmegaConf.register_new_resolver(
 
 def generate_name() -> str:
     return (
-        "${prefix}-${remove_redundant_words:${lower:${last_bit:"
+        "${remove_slashes:${prefix}-${remove_redundant_words:${lower:${last_bit:"
         "${datamodule.dataset_config._target_}}}}-${last_bit:${optimizer._target_}}-"
         "${model.model_name_or_path}-pretrained=${model.pretrained}-fine_tune="
-        "${model.fine_tunable}-${seed}"
+        "${model.fine_tunable}-${seed}}"
     )
 
 
@@ -60,7 +61,7 @@ class Config:
     # disable python warnings if they annoy you
     ignore_warnings: bool = True
     logging_level: str = "INFO"
-    prefix: str = ""
+    prefix: str = "slow-train-debug"
     # evaluate on test set, using best model weights achieved during training
     # lightning chooses best weights based on metric specified in checkpoint
     # callback
