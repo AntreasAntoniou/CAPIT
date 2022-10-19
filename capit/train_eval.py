@@ -22,17 +22,20 @@ log = utils.get_logger(__name__)
 
 def checkpoint_setup(config):
     checkpoint_path = None
+    experiment_dir = pathlib.Path(f"{config.current_experiment_dir}")
 
     if config.resume:
 
         log.info("Continue from existing checkpoint")
 
-        if not pathlib.Path(f"{config.current_experiment_dir}").exists():
-            os.makedirs(f"{config.current_experiment_dir}", exist_ok=True)
+        if not experiment_dir.exists():
+            experiment_dir.mkdir(exist_ok=True, parents=True)
 
-        checkpoint_path = f"{config.current_experiment_dir}/checkpoints/last.ckpt"
+        checkpoint_path = pathlib.Path(
+            f"{config.current_experiment_dir}/checkpoints/last.ckpt"
+        )
 
-        if not pathlib.Path(checkpoint_path).exists():
+        if not checkpoint_path.exists():
             checkpoint_path = None
 
         log.info(checkpoint_path)
@@ -40,8 +43,8 @@ def checkpoint_setup(config):
     else:
 
         log.info("Starting from scratch")
-        if not pathlib.Path(f"{config.current_experiment_dir}").exists():
-            os.makedirs(f"{config.current_experiment_dir}", exist_ok=True)
+        if not experiment_dir.exists():
+            experiment_dir.mkdir(exist_ok=True, parents=True)
 
     return checkpoint_path
 
@@ -91,9 +94,7 @@ def train_eval(config: DictConfig):
     if "callbacks" in config:
         for _, cb_conf in config.callbacks.items():
             if "_target_" in cb_conf:
-                if (
-                    "LogConfigInformation" in cb_conf["_target_"]
-                ):
+                if "LogConfigInformation" in cb_conf["_target_"]:
                     log.info(
                         f"Instantiating config collection callback <{cb_conf._target_}>"
                     )
@@ -109,7 +110,6 @@ def train_eval(config: DictConfig):
                     callbacks.append(hydra.utils.instantiate(cb_conf))
 
     os.environ["WANDB_RESUME"] = "allow"
-    os.environ["WANDB_RUN_ID"] = generate_id()
     # --------------------------------------------------------------------------------
     # Instantiate Experiment Logger
     # --------------------------------------------------------------------------------
