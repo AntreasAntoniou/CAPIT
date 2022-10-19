@@ -152,9 +152,7 @@ class LogConfigInformation(Callback):
 class SaveCheckpointsWandb(Callback):
     """Saves checkpoints to wandb."""
 
-    def __init__(
-        self, wandb_checkpointer: Optional[StatelessCheckpointingWandb] = None
-    ):
+    def __init__(self, wandb_checkpointer: Optional[Any] = None):
         super().__init__()
         self.wandb_checkpointer = wandb_checkpointer
 
