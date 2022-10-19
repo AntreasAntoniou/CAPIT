@@ -33,13 +33,14 @@ OmegaConf.register_new_resolver(
 )
 
 
-def generate_name() -> str:
-    return (
-        "${remove_slashes:${prefix}-${remove_redundant_words:${lower:${last_bit:"
-        "}}}-${last_bit:${optimizer._target_}}-"
-        "${model.model_name_or_path}-pretrained-${model.pretrained}-fine_tune-"
-        "${model.fine_tunable}-${seed}}"
-    )
+def generate_name(prefix, optimizer, model, pretrained, fine_tune, seed) -> str:
+    name = f"{prefix}_"
+    name += f"{optimizer.lower().split('.')[-1]}_"
+    name += f"{model.lower().split('.')[-1]}_"
+    name += f"{pretrained.lower()}_"
+    name += f"{fine_tune.lower()}_"
+    name += f"{seed}"
+    return name.replace("/", "-")
 
 
 @dataclass
@@ -81,7 +82,14 @@ class Config:
     data_dir: str = os.environ["DATASET_DIR"]
     defaults: List[Any] = field(default_factory=lambda: defaults)
     overrides: List[Any] = field(default_factory=lambda: overrides)
-    name: str = generate_name()
+    name: str = generate_name(
+        prefix=prefix,
+        optimizer=optimizer,
+        model=model.model_name_or_path,
+        pretrained=model.pretrained,
+        fine_tune=model.fine_tunable,
+        seed=seed,
+    )
 
     current_experiment_dir: str = "${root_experiment_dir}/${name}"
     code_dir: str = "${hydra:runtime.cwd}"
