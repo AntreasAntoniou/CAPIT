@@ -11,6 +11,7 @@ from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
 
 @hydrated_dataclass(target=WandbLogger)
 class WeightsAndBiasesLoggerConfig:
+    id: str = EXPERIMENT_NAME
     project: str = os.environ["WANDB_PROJECT"]
     offline: bool = False  # set True to store all logs only locally
     resume: str = "allow"  # allow, True, False, must

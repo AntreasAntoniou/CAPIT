@@ -2,19 +2,12 @@ import os
 from dataclasses import MISSING, dataclass, field
 from typing import Any, List, Optional
 
-from omegaconf import OmegaConf
-
 from capit.base.utils import get_logger
-from capit.configs.callbacks import (
-    LearningRateMonitor,
-    LogConfigInformation,
-    LogGrads,
-    ModelSummaryConfig,
-    RichProgressBar,
-    UploadCodeAsArtifact,
-    model_checkpoint_eval,
-    model_checkpoint_train,
-)
+from capit.configs.callbacks import (LearningRateMonitor, LogConfigInformation,
+                                     LogGrads, ModelSummaryConfig, RichProgressBar,
+                                     UploadCodeAsArtifact, model_checkpoint_eval,
+                                     model_checkpoint_train)
+from omegaconf import OmegaConf
 
 log = get_logger(__name__)
 
@@ -37,6 +30,15 @@ OmegaConf.register_new_resolver(
     "remove_redundant_words",
     lambda x: x.replace("scheme", "").replace("module", "").replace("config", ""),
 )
+
+
+def generate_name() -> str:
+    return (
+        "${prefix}-${remove_redundant_words:${lower:${last_bit:"
+        "${datamodule.dataset_config._target_}}}}-${last_bit:${optimizer._target_}}-"
+        "${model.model_name_or_path}-pretrained=${model.pretrained}-fine_tune="
+        "${model.fine_tunable}-${seed}"
+    )
 
 
 @dataclass
@@ -78,18 +80,7 @@ class Config:
     data_dir: str = os.environ["DATASET_DIR"]
     defaults: List[Any] = field(default_factory=lambda: defaults)
     overrides: List[Any] = field(default_factory=lambda: overrides)
-    name: str = (
-        "${prefix}-"
-        "${remove_redundant_words:"
-        "${lower:"
-        "${last_bit:"
-        "${datamodule.dataset_config._target_}}}}-"
-        "${last_bit:${optimizer._target_}}-"
-        "${model.model_name_or_path}-"
-        "pretrained=${model.pretrained}-"
-        "fine_tune=${model.fine_tunable}-"
-        "${seed}"
-    )
+    name: str = generate_name()
 
     current_experiment_dir: str = "${root_experiment_dir}/${name}"
     code_dir: str = "${hydra:runtime.cwd}"
