@@ -6,6 +6,7 @@ import hydra
 import pytorch_lightning
 import torch
 import wandb
+from hydra_zen import instantiate
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, LightningDataModule, Trainer, seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
@@ -82,9 +83,7 @@ def train_eval(config: DictConfig):
     # Instantiate Lightning DataModule for task
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
     # log information regarding data module to be instantiated -- particularly the class name that is stored in _target_
-    datamodule: LightningDataModule = hydra.utils.instantiate(
-        config.datamodule, _recursive_=False
-    )
+    datamodule: LightningDataModule = instantiate(config.datamodule, _recursive_=False)
     # List in comments all possible datamodules/datamodule configs
     datamodule.setup(stage="fit")
     # datamodule_pretty_dict_tree = generate_config_tree(
@@ -114,7 +113,7 @@ def train_eval(config: DictConfig):
                     )
                     cb_conf["config"] = OmegaConf.to_container(config, resolve=True)
                     callbacks.append(
-                        hydra.utils.instantiate(
+                        instantiate(
                             cb_conf,
                             _recursive_=False,
                         )
@@ -124,14 +123,14 @@ def train_eval(config: DictConfig):
                     log.info(f"Instantiating <{cb_conf._target_}>")
                     cb_conf["wandb_checkpointer"] = wandb_checkpointer
                     callbacks.append(
-                        hydra.utils.instantiate(
+                        instantiate(
                             cb_conf,
                             _recursive_=False,
                         )
                     )
                 else:
                     log.info(f"Instantiating callback <{cb_conf._target_}>")
-                    callbacks.append(hydra.utils.instantiate(cb_conf))
+                    callbacks.append(instantiate(cb_conf))
 
     # --------------------------------------------------------------------------------
     # Instantiate Experiment Logger
@@ -142,13 +141,13 @@ def train_eval(config: DictConfig):
         for _, lg_conf in config.logger.items():
             if "_target_" in lg_conf:
                 log.info(f"Instantiating logger <{lg_conf._target_}>")
-                logger.append(hydra.utils.instantiate(lg_conf))
+                logger.append(instantiate(lg_conf))
 
     # --------------------------------------------------------------------------------
     # Instantiate Lightning Trainer
     # --------------------------------------------------------------------------------
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
-    trainer: Trainer = hydra.utils.instantiate(
+    trainer: Trainer = instantiate(
         config.trainer,
         callbacks=callbacks,
         logger=logger,
