@@ -11,6 +11,7 @@ from pytorch_lightning import Callback, LightningDataModule, Trainer, seed_every
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.tuner.tuning import Tuner
 from wandb.util import generate_id
+from wandbless.stateless_checkpointing import StatelessCheckpointingWandb
 
 from capit.base import utils
 from capit.base.utils.typing_utils import get_module_import_path
@@ -20,22 +21,25 @@ from capit.lightning.train_eval_agent import TrainingEvaluationAgent
 log = utils.get_logger(__name__)
 
 
-def checkpoint_setup(config):
+def checkpoint_setup(config, restore_agent: StatelessCheckpointingWandb):
     checkpoint_path = None
     experiment_dir = pathlib.Path(f"{config.current_experiment_dir}")
 
     if config.resume:
 
-        log.info("Continue from existing checkpoint")
-
         if not experiment_dir.exists():
             experiment_dir.mkdir(exist_ok=True, parents=True)
 
-        checkpoint_path = pathlib.Path(
-            f"{config.current_experiment_dir}/checkpoints/last.ckpt"
-        )
-
-        if not checkpoint_path.exists():
+        log.info("Downloading latest checkpoint from wandb")
+        try:
+            checkpoint_path = restore_agent.restore_latest(
+                store_dir=os.environ["MODEL_DIR"], model_name=config.name
+            )
+            log.info("Continue from existing checkpoint")
+        except Exception:
+            log.exception(
+                "Failed to download latest checkpoint from wandb, starting from scratch"
+            )
             checkpoint_path = None
 
         log.info(checkpoint_path)
@@ -59,11 +63,21 @@ def train_eval(config: DictConfig):
     Returns:
         Optional[float]: Metric score for hyperparameter optimization.
     """
+
+    wandb_checkpointer = StatelessCheckpointingWandb(
+        job_type=config.logger.wandb.job_type,
+        dir=config.logger.wandb.save_dir,
+        config=config,
+        project=config.logger.wandb.project,
+        entity=config.logger.wandb.entity,
+        id=config.logger.wandb.id,
+    )
+
     if config.get("seed"):
         seed_everything(config.seed, workers=True)
     # --------------------------------------------------------------------------------
     # Create or recover checkpoint path to resume from
-    checkpoint_path = checkpoint_setup(config)
+    checkpoint_path = checkpoint_setup(config, restore_agent=wandb_checkpointer)
     # --------------------------------------------------------------------------------
     # Instantiate Lightning DataModule for task
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
@@ -99,6 +113,16 @@ def train_eval(config: DictConfig):
                         f"Instantiating config collection callback <{cb_conf._target_}>"
                     )
                     cb_conf["config"] = OmegaConf.to_container(config, resolve=True)
+                    callbacks.append(
+                        hydra.utils.instantiate(
+                            cb_conf,
+                            _recursive_=False,
+                        )
+                    )
+
+                elif "SaveCheckpointsWandb" in cb_conf["_target_"]:
+                    log.info(f"Instantiating <{cb_conf._target_}>")
+                    cb_conf["wandb_checkpointer"] = wandb_checkpointer
                     callbacks.append(
                         hydra.utils.instantiate(
                             cb_conf,

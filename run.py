@@ -17,10 +17,8 @@ def collect_config_store():
     from capit.configs.config_tree import Config, base_callbacks, wandb_callbacks
     from capit.configs.datamodules import InstagramImageTextMultiModalDataModuleConfig
     from capit.configs.hydra import add_hydra_configs
-    from capit.configs.loggers import (
-        TensorboardLoggerConfig,
-        WeightsAndBiasesLoggerConfig,
-    )
+    from capit.configs.loggers import (TensorboardLoggerConfig,
+                                       WeightsAndBiasesLoggerConfig)
     from capit.configs.mode import BaseMode
     from capit.configs.models import CLIPImageTextMultiModalDatasetConfig
     from capit.configs.optimizers import AdamWOptimizerConfig
@@ -45,19 +43,21 @@ def collect_config_store():
     config_store.store(
         group="logger",
         name="wandb",
-        node=dict(wandb_logger=WeightsAndBiasesLoggerConfig()),
+        node=dict(wandb=WeightsAndBiasesLoggerConfig()),
     )
 
     config_store.store(
-        group="logger", name="tb", node=dict(logger=TensorboardLoggerConfig())
+        group="logger",
+        name="tb",
+        node=dict(tensorboard_logger=TensorboardLoggerConfig()),
     )
 
     config_store.store(
         group="logger",
         name="wandb+tb",
         node=dict(
-            tensorboard_logger=TensorboardLoggerConfig(),
-            wandb_logger=WeightsAndBiasesLoggerConfig(),
+            tensorboard=TensorboardLoggerConfig(),
+            wandb=WeightsAndBiasesLoggerConfig(),
         ),
     )
     ###################################################################################

@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 import numpy as np
 import wandb
@@ -8,6 +10,7 @@ from pytorch_lightning.callbacks import ModelSummary
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
 from torch.optim import Optimizer
+from wandbless.stateless_checkpointing import StatelessCheckpointingWandb
 
 log = utils.get_logger(__name__)
 
@@ -131,9 +134,7 @@ class LogConfigInformation(Callback):
         self.config = config
 
     @rank_zero_only
-    def on_batch_start(
-        self, trainer: Trainer, pl_module: LightningModule
-    ) -> None:
+    def on_batch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         if not self.done:
             logger = get_wandb_logger(trainer=trainer)
 
@@ -146,6 +147,30 @@ class LogConfigInformation(Callback):
 
             logger.log_hyperparams(hparams)
             self.done = True
+
+
+class SaveCheckpointsWandb(Callback):
+    """Saves checkpoints to wandb."""
+
+    def __init__(
+        self, wandb_checkpointer: Optional[StatelessCheckpointingWandb] = None
+    ):
+        super().__init__()
+        self.wandb_checkpointer = wandb_checkpointer
+
+    @rank_zero_only
+    def on_save_checkpoint(
+        self,
+        trainer: Trainer,
+        pl_module: LightningModule,
+        checkpoint: Dict[str, Any],
+    ) -> None:
+
+        self.wandb_checkpointer.save(
+            model=checkpoint,
+            model_name=self.wandb_checkpointer.run.id,
+            store_dir=os.environ["MODEL_DIR"],
+        )
 
 
 class PostBuildSummary(Callback):

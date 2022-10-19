@@ -3,10 +3,11 @@ from datetime import timedelta
 from typing import Dict, Optional
 
 from capit.base.callbacks.wandb_callbacks import (LogConfigInformation, LogGrads,
+                                                  SaveCheckpointsWandb,
                                                   UploadCodeAsArtifact)
 from capit.base.utils.typing_utils import get_module_import_path
 from capit.configs.string_variables import CHECKPOINT_DIR
-from hydra_zen import hydrated_dataclass
+from hydra_zen import builds, hydrated_dataclass
 from pytorch_lightning.callbacks import (LearningRateMonitor, ModelCheckpoint,
                                          RichModelSummary, TQDMProgressBar)
 
@@ -60,6 +61,8 @@ class LogGrads:
 class LogConfigInformation:
     config: Optional[Dict] = None
 
+
+SaveCheckpointsWandb = builds(SaveCheckpointsWandb, populate_full_signature=True)
 
 model_checkpoint_eval: ModelCheckpointingConfig = ModelCheckpointingConfig(
     monitor="validation/accuracy_epoch",
