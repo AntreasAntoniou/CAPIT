@@ -5,8 +5,8 @@ from typing import Any, List, Optional
 from capit.base.utils import get_logger
 from capit.configs.callbacks import (LearningRateMonitor, LogConfigInformation,
                                      LogGrads, ModelSummaryConfig, RichProgressBar,
-                                     UploadCodeAsArtifact, model_checkpoint_eval,
-                                     model_checkpoint_train)
+                                     SaveCheckpointsWandb, UploadCodeAsArtifact,
+                                     model_checkpoint_eval, model_checkpoint_train)
 from omegaconf import OmegaConf
 
 log = get_logger(__name__)
@@ -139,6 +139,7 @@ base_callbacks = dict(
 )
 
 wandb_callbacks = dict(
+    stateless_wandb=SaveCheckpointsWandb(),
     model_checkpoint_eval=model_checkpoint_eval,
     model_checkpoint_train=model_checkpoint_train,
     model_summary=ModelSummaryConfig(),
