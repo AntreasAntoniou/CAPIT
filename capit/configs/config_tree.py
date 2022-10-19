@@ -50,6 +50,11 @@ def get_remove_redundant_words(x: str) -> str:
 
 
 def generate_name(prefix, optimizer, model_name, pretrained, fine_tune, seed) -> str:
+    log.info(
+        f"Generating name for experiment with prefix: {prefix}, optimizer: {optimizer},"
+        f" model_name: {model_name}, pretrained: {pretrained}, fine_tune: {fine_tune},"
+        f" seed: {seed}"
+    )
     process_string_fn = lambda x: get_remove_redundant_words(
         get_lower(get_last_bit(get_remove_slashes(str(x))))
     )
@@ -59,7 +64,6 @@ def generate_name(prefix, optimizer, model_name, pretrained, fine_tune, seed) ->
     name += f"{process_string_fn(pretrained)}_"
     name += f"{process_string_fn(fine_tune)}_"
     name += f"{process_string_fn(seed)}"
-    log.info(f"Generated name: {name}")
     return name
 
 
