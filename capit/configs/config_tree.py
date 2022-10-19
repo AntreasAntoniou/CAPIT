@@ -33,14 +33,33 @@ OmegaConf.register_new_resolver(
 )
 
 
-def generate_name(prefix, optimizer, model, pretrained, fine_tune, seed) -> str:
-    name = f"{prefix}_"
-    name += f"{optimizer.lower().split('.')[-1]}_"
-    name += f"{model.lower().split('.')[-1]}_"
-    name += f"{pretrained.lower()}_"
-    name += f"{fine_tune.lower()}_"
-    name += f"{seed}"
-    return name.replace("/", "-")
+def get_last_bit(x):
+    return "${last_bit:" + x + "}"
+
+
+def get_lower(x):
+    return "${lower:" + x + "}"
+
+
+def get_remove_slashes(x):
+    return "${remove_slashes:" + x + "}"
+
+
+def get_remove_redundant_words(x):
+    return "${remove_redundant_words:" + x + "}"
+
+
+def generate_name(prefix, optimizer, model_name, pretrained, fine_tune, seed) -> str:
+    process_string_fn = lambda x: get_remove_redundant_words(
+        get_lower(get_last_bit(x.lower().split(".")[-1]))
+    )
+    name = f"{process_string_fn(prefix)}_"
+    name += f"{process_string_fn(optimizer)}_"
+    name += f"{process_string_fn(model_name)}_"
+    name += f"{process_string_fn(pretrained)}_"
+    name += f"{process_string_fn(fine_tune)}_"
+    name += f"{process_string_fn(seed)}"
+    return name
 
 
 @dataclass
@@ -83,11 +102,11 @@ class Config:
     defaults: List[Any] = field(default_factory=lambda: defaults)
     overrides: List[Any] = field(default_factory=lambda: overrides)
     name: str = generate_name(
-        prefix=prefix,
-        optimizer=optimizer,
-        model=model.model_name_or_path,
-        pretrained=model.pretrained,
-        fine_tune=model.fine_tunable,
+        prefix="${prefix}",
+        optimizer="${optimizer._target_}",
+        model_name="${model.model_name_or_path}",
+        pretrained="${model.pretrained}",
+        fine_tune="${model.fine_tunable}",
         seed=seed,
     )
 
