@@ -2,14 +2,13 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from capit.base.utils import get_logger
+from capit.data.tokenizers import HuggingFaceBPETokenizer
 from dotted_dict import DottedDict
 from rich import print
 from torchvision.transforms.functional import normalize
 from transformers import CLIPModel, CLIPProcessor
 from transformers.models.clip.modeling_clip import contrastive_loss
-
-from capit.base.utils import get_logger
-from capit.data.tokenizers import HuggingFaceBPETokenizer
 
 log = get_logger(__name__)
 
@@ -122,6 +121,7 @@ class CLIPImageTextModel(nn.Module):
         text = self.tokenizer.forward(x=text)
         text = text.to(self.model.device)
         text = text.to(torch.int32)
+        print(text)
         return text
 
     def forward_image(self, image: torch.Tensor):

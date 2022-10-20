@@ -96,7 +96,7 @@ class Config:
     # disable python warnings if they annoy you
     ignore_warnings: bool = True
     logging_level: str = "INFO"
-    prefix: str = "slow-train-debug"
+    prefix: str = "exp"
     # evaluate on test set, using best model weights achieved during training
     # lightning chooses best weights based on metric specified in checkpoint
     # callback
