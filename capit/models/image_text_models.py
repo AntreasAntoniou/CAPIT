@@ -121,7 +121,6 @@ class CLIPImageTextModel(nn.Module):
         text = self.tokenizer.forward(x=text)
         text = text.to(self.model.device)
         text = text.to(torch.int32)
-        print(text)
         return text
 
     def forward_image(self, image: torch.Tensor):
