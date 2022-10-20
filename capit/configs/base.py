@@ -1,3 +1,4 @@
+import multiprocessing
 from dataclasses import dataclass
 from typing import Any, Optional
 
@@ -30,7 +31,7 @@ class DataLoaderConfig:
     persistent_workers: bool = False
     pin_memory: bool = True
     prefetch_factor: int = 2
-    num_workers: int = 16
+    num_workers: int = multiprocessing.cpu_count()
     shuffle: bool = True
 
 
