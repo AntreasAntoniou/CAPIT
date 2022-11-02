@@ -1,0 +1,73 @@
+{
+  "build": { "dockerfile": "Dockerfile" },
+  "runArgs": ["--gpus", "all", "-P"],
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        },
+        "python.defaultInterpreterPath": "/opt/conda/envs/tali-collector/bin/python",
+        "python.languageServer": "Default",
+        "python.formatting.blackPath": "/opt/conda/envs/tali-collector/bin/black",
+        "sourcery.token": "user_PeY4FaK8nyKtXmunufkAMbgkIGAagclUXJxFozlhJrGfVQ5RUL0x3URT0VA",
+        "gitlens.currentLine.enabled": false,
+        "gitlens.hovers.currentLine.over": "line",
+        "gitlens.codeLens.enabled": false,
+        "gitlens.statusBar.enabled": false,
+        "github.copilot.enable": {
+          "*": true
+        },
+        "workbench.preferredDarkColorTheme": "One Dark Pro",
+        "jupyter.themeMatplotlibPlots": true,
+        "ai-docstring.docstringFormat": "sphinx",
+        "ai-docstring.logLevel": "Debug",
+        "python.formatting.provider": "black",
+        "editor.formatOnSave": true,
+        "python.formatting.blackArgs": ["-l 88"],
+        "editor.inlineSuggest.enabled": true,
+        "workbench.iconTheme": "vscode-great-icons",
+        "git.autofetch": true,
+        "workbench.colorTheme": "One Dark",
+        "workbench.colorCustomizations": {},
+        "editor.minimap.enabled": false,
+        "[jsonc]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "redhat.telemetry.enabled": true,
+        "editor.minimap.maxColumn": 88,
+        "files.autoSave": "onFocusChange",
+        "editor.wordWrapColumn": 88,
+        "vsintellicode.features.python.deepLearning": "enabled",
+
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.autoSearchPaths": true,
+        "material-icon-theme.files.associations": {},
+        "material-icon-theme.activeIconPack": "none",
+        "material-icon-theme.folders.theme": "classic",
+        "editor.language.brackets": [],
+        "json.schemas": [],
+        "git.confirmSync": false,
+        "git.enableSmartCommit": true,
+        "window.zoomLevel": 1,
+        "settingsSync.ignoredExtensions": [],
+        "settingsSync.ignoredSettings": []
+      },
+
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "GitHub.copilot-labs",
+        "sourcery.sourcery",
+        "GitHub.copilot",
+        "analytic-signal.preview-mp4"
+      ]
+    }
+  },
+  "mounts": [{ "source": "/mnt/nas", "target": "/data", "type": "bind" }]
+}
