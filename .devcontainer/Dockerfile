@@ -1,10 +1,23 @@
-FROM ghcr.io/antreasantoniou/tali-collector-dev:0.2.0
+FROM ghcr.io/antreasantoniou/gate:0.3.0
 
-SHELL ["conda", "run", "-n", "tali-collector", "/bin/bash", "-c"]
+SHELL ["conda", "run", "-n", "gate", "/bin/bash", "-c"]
 
-RUN apt update
+RUN cd
+ADD ../ /CAPMultiModal
+WORKDIR /CAPMultiModal
+
+RUN bash install_dependencies.sh
 RUN apt install aptitude tree -y
 RUN echo yes | pip install itables tabulate nvitop
 RUN mamba update -c conda-forge ffmpeg starship -y
 
-ENTRYPOINT ["/bin/bash"]
+ADD entrypoint.sh /entrypoint.sh
+ADD ../ /CAPMultiModal
+
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
+
+# The Dockerfile is pretty straightforward. It starts with the base image,
+# which is the mambaforge image. Then, it installs fish and creates a conda environment.
+# It clones the TALI-collector repository and installs the dependencies.
+# Finally, it sets the working directory to the TALI-collector repository and sets the
+# entrypoint to the entrypoint.sh script.
