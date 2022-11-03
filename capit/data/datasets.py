@@ -15,6 +15,8 @@ from dotted_dict import DottedDict
 from PIL import Image
 from torch.utils.data import Dataset
 
+from capit.decorators import configurable
+
 log = get_logger(__name__)
 
 
@@ -202,6 +204,7 @@ class ChallengeSamplesSourceTypes:
     ACROSS_USERS: str = "across_users"
 
 
+@configurable
 class InstagramImageTextMultiModalDataset(Dataset):
     def __init__(
         self,
@@ -503,3 +506,91 @@ class InstagramImageTextMultiModalDataset(Dataset):
             user_name: len(post_ids)
             for user_name, post_ids in self._user_to_post_dict.items()
         }
+
+
+@configurable
+class InstagramImageTextMultiModalDatasetByUser(InstagramImageTextMultiModalDataset):
+    def __init__(
+        self,
+        dataset_dir: str,
+        set_name: str = SplitType.TRAIN,
+        reset_cache: bool = False,
+        num_episodes: int = 100,
+        image_transforms: Optional[Any] = None,
+        text_transforms: Optional[Any] = None,
+        limit_num_samples: Optional[int] = None,
+        max_num_collection_images_per_episode: int = 50,
+        max_num_query_images_per_episode: int = 50,
+        query_image_source: str = ChallengeSamplesSourceTypes.WITHIN_USER,
+        restrict_num_users: Optional[int] = None,
+    ) -> None:
+
+        super(InstagramImageTextMultiModalDatasetByUser, self).__init__(
+            dataset_dir=dataset_dir,
+            set_name=set_name,
+            reset_cache=reset_cache,
+            num_episodes=num_episodes,
+            image_transforms=image_transforms,
+            text_transforms=text_transforms,
+            limit_num_samples=limit_num_samples,
+            max_num_collection_images_per_episode=max_num_collection_images_per_episode,
+            max_num_query_images_per_episode=max_num_query_images_per_episode,
+            query_image_source=query_image_source,
+            restrict_num_users=restrict_num_users,
+        )
+
+    def _get_user_collection_context_images(self, user_name):
+
+        images = []
+        captions = []
+
+        for idx, collection_post_id in enumerate(self._user_to_post_dict[user_name]):
+            (image_path, info_path,) = generate_post_paths_from_user_name_and_post_id(
+                username=user_name,
+                post_id=collection_post_id,
+                post_image_dir=self._post_image_dir,
+                post_info_dir=self._post_info_dir,
+            )
+
+            image = Image.open(image_path)
+
+            if self.image_transforms is not None:
+                image = self.image_transforms(image)
+
+            images.append(image)
+
+            text = self.get_text_from_filepath(filepath=info_path)
+
+            if self.text_transforms is not None:
+                text = self.text_transforms(text)
+
+            captions.append(text)
+
+        return images, captions
+
+    def __getitem__(self, index):
+        if self.restrict_num_users is not None:
+            actual_index = index % self.restrict_num_users
+        else:
+            actual_index = index % len(self._idx_to_user_name)
+        user_name = self._idx_to_user_name[actual_index]
+
+        data_dict.filepath = dict(image_path=image_path, info_path=info_path)
+
+        images, captions = self._get_user_collection_context_images(user_name=user_name)
+
+        data_dict = dict(image=torch.stack(images), text=captions)
+
+        return data_dict
+
+    def get_text_from_filepath(self, filepath):
+        try:
+            text = load_json(filepath)["edge_media_to_caption"]["edges"][0]["node"][
+                "text"
+            ]
+        except Exception:
+            log.debug(
+                "Could not find valid text for this target image. A sample will be resampled.",
+            )
+
+            return text

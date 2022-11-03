@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import numpy as np
+import pytorch_lightning
 import wandb
 from capit.base import utils
 from pytorch_lightning import Callback, LightningModule, Trainer
@@ -19,7 +20,7 @@ def get_wandb_logger(trainer: Trainer) -> WandbLogger:
     """Safely get Weights&Biases logger from Trainer."""
 
     if trainer.fast_dev_run:
-        raise Exception(
+        raise ValueError(
             "Cannot use wandb callbacks since pytorch lightning disables loggers in "
             "`fast_dev_run=true` mode."
         )
@@ -32,7 +33,7 @@ def get_wandb_logger(trainer: Trainer) -> WandbLogger:
             if isinstance(logger, WandbLogger):
                 return logger
 
-    raise Exception(
+    raise ValueError(
         "You are using wandb related callback, but WandbLogger was not found for "
         "some reason..."
     )
@@ -77,8 +78,8 @@ class LogGrads(Callback):
     @rank_zero_only
     def on_before_optimizer_step(
         self,
-        trainer: "pl.CustomTrainer",
-        pl_module: "pl.LightningModule",
+        trainer: pytorch_lightning.CustomTrainer,
+        pl_module: LightningModule,
         optimizer: Optimizer,
         opt_idx: int,
     ) -> None:

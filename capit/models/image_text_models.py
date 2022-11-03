@@ -156,6 +156,28 @@ class CLIPImageTextModel(nn.Module):
             image_embeds=image_embeds,
         )
 
+    def predict_individual(self, image: torch.Tensor, text: torch.Tensor):
+        image_embeds = self.forward_image(image)
+        text_embeds = self.forward_text(text)
+
+        image_embeds = image_embeds / image_embeds.norm(p=2, dim=-1, keepdim=True)
+        text_embeds = text_embeds / text_embeds.norm(p=2, dim=-1, keepdim=True)
+
+        # cosine similarity as logits
+
+        logit_scale = self.model.logit_scale.exp()
+        logits_per_text = (
+            torch.sum(text_embeds * image_embeds.t(), dim=1)
+        ) * logit_scale
+        logits_per_image = logits_per_text.T
+
+        return DottedDict(
+            logits_per_image=logits_per_image,
+            logits_per_text=logits_per_text,
+            text_embeds=text_embeds,
+            image_embeds=image_embeds,
+        )
+
     def step(self, batch, batch_idx):
         image = batch["image"][0]
         query_images = batch["query_image_set"][0]

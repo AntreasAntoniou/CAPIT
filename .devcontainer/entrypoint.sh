@@ -1,3 +1,2 @@
-cd /CAPMultiModal
-git pull
+pip install -e .
 /bin/bash
