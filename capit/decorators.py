@@ -4,16 +4,9 @@ from hydra_zen import builds, instantiate
 
 
 def configurable(func: Callable) -> Callable:
-    def generate_config(func):
-        return builds(func, populate_full_signature=True)
-
-    @functools.wraps(func)
-    def make_configurable(*args, **kwargs):
-        func.__configurable__ = True
-        func.config_dataclass = generate_config(func=func)
-        return func(*args, **kwargs)
-
-    return make_configurable
+    func.__configurable__ = True
+    func.default_config = builds(func, populate_full_signature=True)
+    return func
 
 
 def check_if_configurable(func: Callable) -> bool:
@@ -36,7 +29,7 @@ if __name__ == "__main__":
     print(check_if_configurable(module))
 
     module_from_config = instantiate(
-        module.config_dataclass, weight_decay=0.2, random_crap="world"
+        module.default_config, weight_decay=0.2, random_crap="world"
     )
 
     print(check_if_configurable(module_from_config), module_from_config)

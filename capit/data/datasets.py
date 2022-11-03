@@ -14,6 +14,7 @@ from capit.configs.base import DatasetDirectoryConfig, ImageShape, ModalityConfi
 from dotted_dict import DottedDict
 from PIL import Image
 from torch.utils.data import Dataset
+from torchvision.transforms import Compose, Resize, ToTensor, RandomCrop
 
 from capit.decorators import configurable
 
@@ -525,7 +526,7 @@ class InstagramImageTextMultiModalDatasetByUser(InstagramImageTextMultiModalData
         restrict_num_users: Optional[int] = None,
     ) -> None:
 
-        super(InstagramImageTextMultiModalDatasetByUser, self).__init__(
+        super().__init__(
             dataset_dir=dataset_dir,
             set_name=set_name,
             reset_cache=reset_cache,
@@ -543,6 +544,7 @@ class InstagramImageTextMultiModalDatasetByUser(InstagramImageTextMultiModalData
 
         images = []
         captions = []
+        filepaths = []
 
         for idx, collection_post_id in enumerate(self._user_to_post_dict[user_name]):
             (image_path, info_path,) = generate_post_paths_from_user_name_and_post_id(
@@ -552,21 +554,26 @@ class InstagramImageTextMultiModalDatasetByUser(InstagramImageTextMultiModalData
                 post_info_dir=self._post_info_dir,
             )
 
-            image = Image.open(image_path)
+            preprocess_transforms = Compose(
+                [Resize((224)), RandomCrop((224)), ToTensor()]
+            )
+
+            image = preprocess_transforms(Image.open(image_path))
 
             if self.image_transforms is not None:
                 image = self.image_transforms(image)
-
-            images.append(image)
 
             text = self.get_text_from_filepath(filepath=info_path)
 
             if self.text_transforms is not None:
                 text = self.text_transforms(text)
 
-            captions.append(text)
+            if text is not False:
+                images.append(image)
+                captions.append(text)
+                filepaths.append((image_path, info_path))
 
-        return images, captions
+        return images, captions, filepaths
 
     def __getitem__(self, index):
         if self.restrict_num_users is not None:
@@ -575,22 +582,22 @@ class InstagramImageTextMultiModalDatasetByUser(InstagramImageTextMultiModalData
             actual_index = index % len(self._idx_to_user_name)
         user_name = self._idx_to_user_name[actual_index]
 
-        data_dict.filepath = dict(image_path=image_path, info_path=info_path)
+        images, captions, filepaths = self._get_user_collection_context_images(
+            user_name=user_name
+        )
 
-        images, captions = self._get_user_collection_context_images(user_name=user_name)
-
-        data_dict = dict(image=torch.stack(images), text=captions)
-
-        return data_dict
+        return dict(image=images, text=captions, filepaths=filepaths)
 
     def get_text_from_filepath(self, filepath):
         try:
             text = load_json(filepath)["edge_media_to_caption"]["edges"][0]["node"][
                 "text"
             ]
+
+            return text
         except Exception:
             log.debug(
                 "Could not find valid text for this target image. A sample will be resampled.",
             )
 
-            return text
+            return False

@@ -10,6 +10,8 @@ from torchvision.transforms.functional import normalize
 from transformers import CLIPModel, CLIPProcessor
 from transformers.models.clip.modeling_clip import contrastive_loss
 
+from capit.decorators import configurable
+
 log = get_logger(__name__)
 
 
@@ -67,6 +69,7 @@ def resize_custom(image, target_image_shape, interpolation="bilinear", debug=Fal
     return image
 
 
+@configurable
 class CLIPImageTextModel(nn.Module):
     def __init__(
         self,
