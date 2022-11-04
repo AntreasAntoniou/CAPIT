@@ -38,7 +38,7 @@ class DataModule(LightningDataModule):
 
 @dataclass
 class ImageTextTransformConfig:
-    image_transforms: Any = image_transforms_base()
+    image_transforms: Any = None
     text_transforms: Any = None
 
 
@@ -62,7 +62,7 @@ class InstagramImageTextDataModule(DataModule):
         transform_train: ImageTextTransformConfig = ImageTextTransformConfig(),
         transform_eval: ImageTextTransformConfig = ImageTextTransformConfig(),
     ):
-        super(InstagramImageTextDataModule, self).__init__(
+        super().__init__(
             dataset_config=dataset_config, data_loader_config=data_loader_config
         )
 

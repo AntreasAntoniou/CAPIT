@@ -13,7 +13,6 @@ RUN echo yes | pip install itables tabulate nvitop
 RUN mamba update -c conda-forge ffmpeg starship -y
 
 ADD entrypoint.sh /entrypoint.sh
-ADD ../ /CAPMultiModal
 
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
 

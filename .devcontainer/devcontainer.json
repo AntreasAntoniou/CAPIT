@@ -1,6 +1,6 @@
 {
   "build": { "dockerfile": "Dockerfile" },
-  "runArgs": ["--gpus", "all", "-P"],
+  "runArgs": ["--gpus", "all", "-P", "--shm-size=80gb"],
   "customizations": {
     // Configure properties specific to VS Code.
     "vscode": {
@@ -35,7 +35,7 @@
         "workbench.colorTheme": "One Dark",
         "workbench.colorCustomizations": {},
         "editor.minimap.enabled": false,
-        
+
         "redhat.telemetry.enabled": true,
         "editor.minimap.maxColumn": 88,
         "files.autoSave": "onFocusChange",
@@ -57,9 +57,7 @@
       },
 
       // Add the IDs of extensions you want installed when the container is created.
-      "extensions": [
-       
-      ]
+      "extensions": []
     }
   },
   "mounts": [{ "source": "/mnt/nas", "target": "/data", "type": "bind" }]

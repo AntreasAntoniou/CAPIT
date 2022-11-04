@@ -27,7 +27,7 @@ class ModalityConfig:
 class DataLoaderConfig:
     dataset: Any = None
     _target_: str = get_module_import_path(DataLoader)
-    batch_size: int = BATCH_SIZE
+    batch_size: int = 128
     persistent_workers: bool = False
     pin_memory: bool = True
     prefetch_factor: int = 2

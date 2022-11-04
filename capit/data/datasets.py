@@ -15,6 +15,7 @@ from dotted_dict import DottedDict
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.transforms import Compose, Resize, ToTensor, RandomCrop
+from capit.data.transforms import ToThreeChannels
 
 from capit.decorators import configurable
 
@@ -540,6 +541,9 @@ class InstagramImageTextMultiModalDatasetByUser(InstagramImageTextMultiModalData
             restrict_num_users=restrict_num_users,
         )
 
+    def __len__(self):
+        return len(self._idx_to_user_name)
+
     def _get_user_collection_context_images(self, user_name):
 
         images = []
@@ -555,7 +559,12 @@ class InstagramImageTextMultiModalDatasetByUser(InstagramImageTextMultiModalData
             )
 
             preprocess_transforms = Compose(
-                [Resize((224)), RandomCrop((224)), ToTensor()]
+                [
+                    Resize((224)),
+                    RandomCrop((224)),
+                    ToTensor(),
+                    ToThreeChannels(),
+                ]
             )
 
             image = preprocess_transforms(Image.open(image_path))
@@ -586,7 +595,13 @@ class InstagramImageTextMultiModalDatasetByUser(InstagramImageTextMultiModalData
             user_name=user_name
         )
 
-        return dict(image=images, text=captions, filepaths=filepaths)
+        return dict(
+            image=images,
+            text=captions,
+            filepath=filepaths,
+            user_name=[user_name] * len(images),
+            ids=list(range(len(images))),
+        )
 
     def get_text_from_filepath(self, filepath):
         try:

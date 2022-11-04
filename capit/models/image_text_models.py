@@ -1,12 +1,11 @@
+from dataclasses import dataclass
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from capit.base.utils import get_logger
-from capit.data.tokenizers import HuggingFaceBPETokenizer
 from dotted_dict import DottedDict
 from rich import print
-from torchvision.transforms.functional import normalize
 from transformers import CLIPModel, CLIPProcessor
 from transformers.models.clip.modeling_clip import contrastive_loss
 
@@ -69,6 +68,14 @@ def resize_custom(image, target_image_shape, interpolation="bilinear", debug=Fal
     return image
 
 
+@dataclass
+class CLIPModelOutput:
+    logits_per_image: torch.Tensor
+    logits_per_text: torch.Tensor
+    text_embeds: torch.Tensor
+    image_embeds: torch.Tensor
+
+
 @configurable
 class CLIPImageTextModel(nn.Module):
     def __init__(
@@ -80,7 +87,6 @@ class CLIPImageTextModel(nn.Module):
         super().__init__()
         self.model = CLIPModel.from_pretrained(model_name_or_path)
         self.processor = CLIPProcessor.from_pretrained(model_name_or_path)
-        self.tokenizer = HuggingFaceBPETokenizer(context_length=77, parallel=True)
 
         self.pretrained = pretrained
         self.fine_tunable = fine_tunable
@@ -95,22 +101,14 @@ class CLIPImageTextModel(nn.Module):
             self.processor.feature_extractor.size,
             self.processor.feature_extractor.size,
         ]
-        self.mean = self.processor.feature_extractor.image_mean
-        self.std = self.processor.feature_extractor.image_std
-        # self.input_normalization = nn.InstanceNorm2d(
-        #     num_features=3,
-        #     affine=True,
-        # )
 
     def build(self, batch):
         log.info(f"Built model {self.__class__.__name__}")
         return self.step(batch, 0)
 
     def preprocess_image(self, image: torch.Tensor):
-        # if self.fine_tunable is True:
-        #     image = self.input_normalization(image)
-
-        image = normalize(image, mean=self.mean, std=self.std)
+        image = self.processor(images=image, return_tensors="pt")["pixel_values"]
+        image = image.to(self.model.device)
 
         if len(image.shape) != 4:
             raise ValueError(
@@ -120,25 +118,28 @@ class CLIPImageTextModel(nn.Module):
             )
         return image
 
-    def proprocess_text(self, text: torch.Tensor):
-        text = self.tokenizer.forward(x=text)
+    def proprocess_text(self, text: torch.Tensor) -> torch.Tensor:
+        text = self.processor(
+            text=text, return_tensors="pt", padding=True, truncation=True
+        )["input_ids"]
         text = text.to(self.model.device)
         text = text.to(torch.int32)
         return text
 
-    def forward_image(self, image: torch.Tensor):
-        image = image.to(self.model.device)
+    def forward_image(self, image: torch.Tensor) -> torch.Tensor:
         image = self.preprocess_image(image)
+        image.to(torch.cuda.current_device())
         return self.model.get_image_features(image)
 
-    def forward_text(self, text: torch.Tensor):
+    def forward_text(self, text: torch.Tensor) -> torch.Tensor:
 
         text = self.proprocess_text(text)
+        text = text.to(torch.cuda.current_device())
         if len(text.shape) == 1:
             text = text.unsqueeze(0)
         return self.model.get_text_features(text)
 
-    def forward(self, image: torch.Tensor, text: torch.Tensor):
+    def forward(self, image: torch.Tensor, text: torch.Tensor) -> CLIPModelOutput:
 
         image_embeds = self.forward_image(image)
         text_embeds = self.forward_text(text)
@@ -152,14 +153,16 @@ class CLIPImageTextModel(nn.Module):
         logits_per_text = torch.matmul(text_embeds, image_embeds.t()) * logit_scale
         logits_per_image = logits_per_text.T
 
-        return DottedDict(
+        return CLIPModelOutput(
             logits_per_image=logits_per_image,
             logits_per_text=logits_per_text,
             text_embeds=text_embeds,
             image_embeds=image_embeds,
         )
 
-    def predict_individual(self, image: torch.Tensor, text: torch.Tensor):
+    def predict_individual(
+        self, image: torch.Tensor, text: torch.Tensor
+    ) -> CLIPModelOutput:
         image_embeds = self.forward_image(image)
         text_embeds = self.forward_text(text)
 
@@ -169,17 +172,9 @@ class CLIPImageTextModel(nn.Module):
         # cosine similarity as logits
 
         logit_scale = self.model.logit_scale.exp()
-        logits_per_text = (
-            torch.sum(text_embeds * image_embeds.t(), dim=1)
-        ) * logit_scale
-        logits_per_image = logits_per_text.T
+        logits = (torch.sum(text_embeds * image_embeds, dim=1)) * logit_scale
 
-        return DottedDict(
-            logits_per_image=logits_per_image,
-            logits_per_text=logits_per_text,
-            text_embeds=text_embeds,
-            image_embeds=image_embeds,
-        )
+        return logits
 
     def step(self, batch, batch_idx):
         image = batch["image"][0]
