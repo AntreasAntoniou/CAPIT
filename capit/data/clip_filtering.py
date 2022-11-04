@@ -11,6 +11,7 @@ import torch
 from torch.utils.data import DataLoader
 import tqdm
 from yaml import parse
+from capit.base.utils.loggers import get_logger
 from capit.base.utils.tf_babysitting import configure_tf_memory_growth
 from capit.configs.base import DataLoaderConfig
 
@@ -24,6 +25,8 @@ from capit.models.image_text_models import CLIPImageTextModel
 
 install()
 configure_tf_memory_growth()
+
+logger = get_logger(set_default_handler=True)
 
 
 def collate_batch(batch):
@@ -51,7 +54,7 @@ import pyarrow.parquet as pq
 class TableEntrySchema:
     user_name: pa.string()
     id: pa.string()
-    filepath: pa.string()
+    filepath: pa.list_(pa.string())
     similarity: pa.float32()
 
 
@@ -66,19 +69,26 @@ def add_row_to_table(
     user_name: str,
 ) -> int:
     try:
-        table_filepath = data_root / f"{user_name}" / f"{id}.parquet"
+        user_name_filepath = table_filepath = data_root / f"{user_name}"
+        entry_filepath = user_name_filepath / f"{id}.parquet"
+
+        if entry_filepath.exists():
+            return ResponseTypes.EXISTS
+
+        if not user_name_filepath.exists():
+            user_name_filepath.mkdir(parents=True, exist_ok=True)
 
         table_entry = pa.table(
             [
                 pa.array([user_name], type=pa.string()),
-                pa.array([id], type=pa.string()),
-                pa.array([filepath], type=pa.string()),
+                pa.array([id], type=pa.int32()),
+                pa.array([filepath], type=pa.list_(pa.string())),
                 pa.array([similarity], type=pa.float32()),
             ],
             schema=table_entry_schema,
         )
 
-        pq.write_table(table=table_entry, where=table_filepath)
+        pq.write_table(table=table_entry, where=entry_filepath)
 
         return ResponseTypes.DONE
     except Exception as e:
@@ -152,7 +162,7 @@ if __name__ == "__main__":
                     similarity_batch = model.predict_individual(
                         image=image_batch, text=caption_batch
                     )
-                    similarity_batch = similarity_batch.detach().cpu().to_list()
+                    similarity_batch = similarity_batch.detach().cpu().tolist()
 
                 image_bucket = image_bucket[args.bucket_size :]
                 caption_bucket = caption_bucket[args.bucket_size :]
@@ -164,7 +174,7 @@ if __name__ == "__main__":
                     filepath_batch, similarity_batch, ids_bucket_batch, user_name_batch
                 ):
                     response = add_row_to_table(
-                        filepath=filepath,
+                        filepath=list(filepath),
                         similarity=similarity,
                         id=idx,
                         user_name=user_name,
