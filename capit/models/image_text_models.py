@@ -107,6 +107,9 @@ class CLIPImageTextModel(nn.Module):
         return self.step(batch, 0)
 
     def preprocess_image(self, image: torch.Tensor):
+        image = image.cpu()
+        if len(image.shape) == 4:
+            image = image.unbind(0)
         image = self.processor(images=image, return_tensors="pt")["pixel_values"]
         image = image.to(self.model.device)
 
@@ -128,13 +131,11 @@ class CLIPImageTextModel(nn.Module):
 
     def forward_image(self, image: torch.Tensor) -> torch.Tensor:
         image = self.preprocess_image(image)
-        image.to(torch.cuda.current_device())
         return self.model.get_image_features(image)
 
     def forward_text(self, text: torch.Tensor) -> torch.Tensor:
 
         text = self.proprocess_text(text)
-        text = text.to(torch.cuda.current_device())
         if len(text.shape) == 1:
             text = text.unsqueeze(0)
         return self.model.get_text_features(text)
@@ -172,15 +173,13 @@ class CLIPImageTextModel(nn.Module):
         # cosine similarity as logits
 
         logit_scale = self.model.logit_scale.exp()
-        logits = (torch.sum(text_embeds * image_embeds, dim=1)) * logit_scale
-
-        return logits
+        return (torch.sum(text_embeds * image_embeds, dim=1)) * logit_scale
 
     def step(self, batch, batch_idx):
-        image = batch["image"][0]
-        query_images = batch["query_image_set"][0]
-        images = torch.cat([image.unsqueeze(0), query_images], dim=0)
-        text = batch["text"][0]
+        image = batch["target_image"][0]
+        challenge_images = batch["challenge_images"][0]
+        images = torch.cat([image.unsqueeze(0), challenge_images], dim=0)
+        text = batch["target_text"][0]
         output_dict = self.forward(images, text)
         opt_loss = contrastive_loss(output_dict.logits_per_text)
         accuracy = (output_dict.logits_per_text.argmax(dim=-1) == 0).float().mean()

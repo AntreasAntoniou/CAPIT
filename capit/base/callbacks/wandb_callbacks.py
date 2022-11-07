@@ -78,7 +78,7 @@ class LogGrads(Callback):
     @rank_zero_only
     def on_before_optimizer_step(
         self,
-        trainer: pytorch_lightning.CustomTrainer,
+        trainer: pytorch_lightning.Trainer,
         pl_module: LightningModule,
         optimizer: Optimizer,
         opt_idx: int,

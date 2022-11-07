@@ -7,7 +7,6 @@ class ToThreeChannels(nn.Module):
         super().__init__()
 
     def forward(self, image):
-
         if image.shape[0] == 1:
             return image.repeat(3, 1, 1)
         elif image.shape[0] == 4:

@@ -3,16 +3,21 @@ from typing import Any
 
 from capit.base.utils.typing_utils import get_module_import_path
 from capit.configs.base import DataLoaderConfig
-from capit.configs.datasets import InstagramImageTextMultiModalDatasetConfig
+from capit.configs.datasets import (
+    InstagramImageTextMultiModalDatasePyArrowConfig,
+    InstagramImageTextMultiModalDatasetConfig,
+)
+from torchvision.transforms import Compose, Resize, ToTensor, RandomCrop
+
 from capit.configs.string_variables import DATASET_DIR
 from capit.data.datamodules import InstagramImageTextDataModule
-from hydra_zen import hydrated_dataclass
+from hydra_zen import builds, hydrated_dataclass
 
 
 @hydrated_dataclass(target=InstagramImageTextDataModule)
 class InstagramImageTextMultiModalDataModuleConfig:
-    dataset_config: Any = InstagramImageTextMultiModalDatasetConfig(
-        dataset_dir=DATASET_DIR
+    dataset_config: Any = InstagramImageTextMultiModalDatasePyArrowConfig(
+        dataset_dir=DATASET_DIR, image_transforms=None
     )
     data_loader_config: Any = DataLoaderConfig()
     shuffle_train: bool = True

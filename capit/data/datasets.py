@@ -6,7 +6,7 @@ import random
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Optional, Union
-from hydra_zen import instantiate
+from hydra_zen import builds, instantiate
 
 import numpy as np
 import torch
@@ -90,6 +90,7 @@ def generate_post_paths_from_user_name_and_post_id(
     return image_path, info_path
 
 
+@configurable
 class DummyMultiModalDataset(Dataset):
     def __init__(
         self,
@@ -537,13 +538,20 @@ class InstagramImageTextMultiModalDataset(Dataset):
         }
 
 
+def default_image_transforms():
+    return Compose([Resize(224), RandomCrop(224), ToTensor(), ToThreeChannels()])
+
+
+default_image_transforms_config = builds(default_image_transforms)
+
+
 @configurable
 class InstagramImageTextMultiModalDatasePyArrow(Dataset):
     def __init__(
         self,
         dataset_dir: Union[str, pathlib.Path],
         set_name: str = SplitType.TRAIN,
-        top_k_percent: int = 10,
+        top_k_percent: int = 50,
         reset_cache: bool = False,
         num_episodes: int = 100,
         image_transforms: Optional[Any] = None,
@@ -562,7 +570,7 @@ class InstagramImageTextMultiModalDatasePyArrow(Dataset):
         self.table_source = self.dataset_root_dir / "instagram_table"
         self.reset_cache = reset_cache
         self.num_episodes = num_episodes
-        self.image_transforms = image_transforms
+        self.image_transforms = default_image_transforms()
         self.text_transforms = text_transforms
         self.limit_num_samples = limit_num_samples
         self.max_num_collection_images_per_episode = (
@@ -632,7 +640,6 @@ class InstagramImageTextMultiModalDatasePyArrow(Dataset):
             return self.__getitem__(self.current_index + 1)
 
         image = Image.open(image_path)
-
         if self.image_transforms is not None:
             image = self.image_transforms(image)
 

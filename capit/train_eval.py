@@ -61,20 +61,11 @@ def train_eval(config: DictConfig):
         Optional[float]: Metric score for hyperparameter optimization.
     """
 
-    wandb_checkpointer = StatelessCheckpointingWandb(
-        job_type=config.logger.wandb.job_type,
-        dir=config.logger.wandb.save_dir,
-        config=config,
-        project=config.logger.wandb.project,
-        entity=os.environ["WANDB_ENTITY"],
-        id=config.logger.wandb.id,
-    )
-
     if config.get("seed"):
         seed_everything(config.seed, workers=True)
     # --------------------------------------------------------------------------------
     # Create or recover checkpoint path to resume from
-    checkpoint_path = checkpoint_setup(config, restore_agent=wandb_checkpointer)
+    checkpoint_path = None
     # --------------------------------------------------------------------------------
     # Instantiate Lightning DataModule for task
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
@@ -115,17 +106,17 @@ def train_eval(config: DictConfig):
                         )
                     )
 
-                elif "SaveCheckpointsWandb" in cb_conf["_target_"]:
-                    log.info(
-                        f"Instantiating <{cb_conf._target_} with {wandb_checkpointer}>"
-                    )
-                    callbacks.append(
-                        instantiate(
-                            config=cb_conf,
-                            wandb_checkpointer=wandb_checkpointer,
-                            _recursive_=False,
-                        )
-                    )
+                # elif "SaveCheckpointsWandb" in cb_conf["_target_"]:
+                #     log.info(
+                #         f"Instantiating <{cb_conf._target_} with {wandb_checkpointer}>"
+                #     )
+                #     callbacks.append(
+                #         instantiate(
+                #             config=cb_conf,
+                #             wandb_checkpointer=wandb_checkpointer,
+                #             _recursive_=False,
+                #         )
+                #     )
                 else:
                     log.info(f"Instantiating callback <{cb_conf._target_}>")
                     callbacks.append(instantiate(cb_conf))

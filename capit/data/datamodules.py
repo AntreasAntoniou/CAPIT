@@ -6,7 +6,6 @@ from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS
 
-from capit.data.transforms import image_transforms_base
 from capit.decorators import configurable
 
 

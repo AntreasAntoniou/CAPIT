@@ -3,10 +3,17 @@ from dataclasses import MISSING, dataclass, field
 from typing import Any, List, Optional
 
 from capit.base.utils import get_logger
-from capit.configs.callbacks import (LearningRateMonitor, LogConfigInformation,
-                                     LogGrads, ModelSummaryConfig, RichProgressBar,
-                                     SaveCheckpointsWandb, UploadCodeAsArtifact,
-                                     model_checkpoint_eval, model_checkpoint_train)
+from capit.configs.callbacks import (
+    LearningRateMonitor,
+    LogConfigInformation,
+    LogGrads,
+    ModelSummaryConfig,
+    RichProgressBar,
+    SaveCheckpointsWandb,
+    UploadCodeAsArtifact,
+    model_checkpoint_eval,
+    model_checkpoint_train,
+)
 from omegaconf import OmegaConf
 
 log = get_logger(__name__)
@@ -119,7 +126,7 @@ class Config:
     name: str = generate_name(
         prefix="${prefix}",
         optimizer="${optimizer._target_}",
-        dataset_name="${datamodule.dataset_config.query_image_source}",
+        dataset_name="${datamodule.dataset_config.challenge_image_source}",
         model_name="${model.model_name_or_path}",
         pretrained="${model.pretrained}",
         fine_tune="${model.fine_tunable}",
@@ -139,7 +146,6 @@ base_callbacks = dict(
 )
 
 wandb_callbacks = dict(
-    stateless_wandb=SaveCheckpointsWandb(),
     model_checkpoint_eval=model_checkpoint_eval,
     model_checkpoint_train=model_checkpoint_train,
     model_summary=ModelSummaryConfig(),

@@ -1,7 +1,7 @@
 from typing import Any
 
 import torch
-from hydra.utils import instantiate
+from hydra_zen import instantiate
 from pytorch_lightning import LightningDataModule, LightningModule
 
 from capit.base.utils import get_logger, pretty_config
@@ -10,6 +10,8 @@ log = get_logger(__name__)
 
 
 def get_dict_shapes(x):
+    if not isinstance(x, dict):
+        return get_dict_shapes(x.__dict__)
     return {
         key: value.shape if isinstance(value, torch.Tensor) else len(value)
         for key, value in x.items()
@@ -56,14 +58,14 @@ class TrainingEvaluationAgent(LightningModule):
         return opt_loss
 
     def validation_step(self, batch, batch_idx):
-        opt_loss, output_dict = self.model.step(
+        _, output_dict = self.model.step(
             batch,
             batch_idx,
         )
         self.collect_metrics_step(output_dict.metrics, phase_name="validation")
 
     def test_step(self, batch, batch_idx):
-        opt_loss, output_dict = self.model.step(
+        _, output_dict = self.model.step(
             batch,
             batch_idx,
         )
