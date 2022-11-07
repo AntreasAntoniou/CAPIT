@@ -101,6 +101,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--bucket_size", type=int, default=1800)
     parser.add_argument("--data_root", type=str, default="/data/instagram_table/")
+    parser.add_argument("--set_name", type=str)
     args = parser.parse_args()
 
     data_root = pathlib.Path(args.data_root)
@@ -121,8 +122,16 @@ if __name__ == "__main__":
         config=dataset_config, dataset_dir="/data/", set_name=SplitType.TEST
     )
 
+    dataset = (
+        train_dataset
+        if args.set_name == "train"
+        else val_dataset
+        if args.set_name == "val"
+        else test_dataset
+    )
+
     data_loader = DataLoader(
-        dataset=train_dataset,
+        dataset=dataset,
         batch_size=4,
         pin_memory=False,
         num_workers=8,
