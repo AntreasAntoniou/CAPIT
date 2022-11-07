@@ -39,10 +39,11 @@ def collate_batch(batch):
     return output
 
 
-class ResponseTypes(Enum):
-    DONE = 0
-    EXISTS = 1
-    FAILED = 2
+@dataclass
+class ResponseTypes:
+    DONE: int = 0
+    EXISTS: int = 1
+    FAILED: int = 2
 
 
 import pyarrow as pa
@@ -69,7 +70,7 @@ def add_row_to_table(
     user_name: str,
 ) -> int:
     try:
-        user_name_filepath = table_filepath = data_root / f"{user_name}"
+        user_name_filepath = data_root / f"{user_name}"
         entry_filepath = user_name_filepath / f"{id}.parquet"
 
         if entry_filepath.exists():
@@ -157,26 +158,25 @@ if __name__ == "__main__":
                 filepath_batch = filepath_bucket[: args.bucket_size]
                 user_name_batch = user_name_bucket[: args.bucket_size]
                 ids_bucket_batch = ids_bucket[: args.bucket_size]
-                
-                user_name_filepath = table_filepath = data_root / f"{user_name_batch[0]}"
-                
+
+                user_name_filepath = table_filepath = (
+                    data_root / f"{user_name_batch[0]}"
+                )
+
                 image_bucket = image_bucket[args.bucket_size :]
                 caption_bucket = caption_bucket[args.bucket_size :]
                 filepath_bucket = filepath_bucket[args.bucket_size :]
                 user_name_bucket = user_name_bucket[args.bucket_size :]
                 ids_bucket = ids_bucket[args.bucket_size :]
-                
+
                 if user_name_filepath.exists():
                     continue
-                    
 
                 with torch.no_grad():
                     similarity_batch = model.predict_individual(
                         image=image_batch, text=caption_batch
                     )
                     similarity_batch = similarity_batch.detach().cpu().tolist()
-
-                
 
                 for filepath, similarity, idx, user_name in zip(
                     filepath_batch, similarity_batch, ids_bucket_batch, user_name_batch

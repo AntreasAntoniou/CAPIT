@@ -1,19 +1,30 @@
+from asyncio.log import logger
+from math import floor
 import os
 import pathlib
 import random
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, Union
+from hydra_zen import instantiate
 
 import numpy as np
 import torch
 import tqdm
+
+import pathlib
+import pyarrow as pa
+import pyarrow.parquet as pq
+import pandas as pd
+import pyarrow.dataset as ds
+import sys
+
 from capit.base.utils.loggers import get_logger
 from capit.base.utils.storage import load_json, save_json
 from capit.configs.base import DatasetDirectoryConfig, ImageShape, ModalityConfig
 from dotted_dict import DottedDict
 from PIL import Image
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import Compose, Resize, ToTensor, RandomCrop
 from capit.data.transforms import ToThreeChannels
 
@@ -204,6 +215,22 @@ class DummyMultiModalDataset(Dataset):
 class ChallengeSamplesSourceTypes:
     WITHIN_USER: str = "within_user"
     ACROSS_USERS: str = "across_users"
+
+
+def rank_user_items_by_clip_score(username_filepath: pathlib.Path):
+    user_table = pq.read_table(username_filepath).to_pandas()
+    return user_table.sort_values(by="similarity", ascending=False)
+
+
+def get_ranked_filepaths_from_user(
+    username_filepath: pathlib.Path, top_k_percent_to_return: int
+):
+    ranked_user_items = rank_user_items_by_clip_score(username_filepath)
+    ranked_filepath_list = ranked_user_items["filepath"].tolist()
+    top_k_percent_to_return = int(
+        len(ranked_filepath_list) * top_k_percent_to_return / 100
+    )
+    return ranked_filepath_list[:top_k_percent_to_return]
 
 
 @configurable
@@ -511,6 +538,226 @@ class InstagramImageTextMultiModalDataset(Dataset):
 
 
 @configurable
+class InstagramImageTextMultiModalDatasePyArrow(Dataset):
+    def __init__(
+        self,
+        dataset_dir: Union[str, pathlib.Path],
+        set_name: str = SplitType.TRAIN,
+        top_k_percent: int = 10,
+        reset_cache: bool = False,
+        num_episodes: int = 100,
+        image_transforms: Optional[Any] = None,
+        text_transforms: Optional[Any] = None,
+        limit_num_samples: Optional[int] = None,
+        max_num_collection_images_per_episode: int = 50,
+        max_num_query_images_per_episode: int = 50,
+        challenge_image_source: str = ChallengeSamplesSourceTypes.WITHIN_USER,
+        restrict_num_users: Optional[int] = None,
+    ):
+        super(InstagramImageTextMultiModalDatasePyArrow, self).__init__()
+
+        self.set_name = set_name
+        self.dataset_root_dir = pathlib.Path(dataset_dir)
+        self.data_source = self.dataset_root_dir
+        self.table_source = self.dataset_root_dir / "instagram_table"
+        self.reset_cache = reset_cache
+        self.num_episodes = num_episodes
+        self.image_transforms = image_transforms
+        self.text_transforms = text_transforms
+        self.limit_num_samples = limit_num_samples
+        self.max_num_collection_images_per_episode = (
+            max_num_collection_images_per_episode
+        )
+        self.max_num_query_images_per_episode = max_num_query_images_per_episode
+        self.query_image_source = challenge_image_source.lower()
+        self.restrict_num_users = restrict_num_users
+        self.top_k_percent = top_k_percent
+
+        self.username_list = list(
+            folderpath.name for folderpath in self.table_source.iterdir()
+        )
+
+        self.total_num_users = len(self.username_list)
+
+        set_name_to_ratio = {
+            SplitType.TRAIN: floor(0.8 * self.total_num_users),
+            SplitType.VAL: floor(0.1 * self.total_num_users),
+            SplitType.TEST: self.total_num_users - floor(0.9 * self.total_num_users),
+        }
+
+        if set_name == SplitType.TRAIN:
+            start_idx = 0
+            end_idx = int(set_name_to_ratio[SplitType.TRAIN])
+            self.set_usernames = self.username_list[start_idx:end_idx]
+
+        elif set_name == SplitType.VAL:
+            start_idx = int(set_name_to_ratio[SplitType.TRAIN])
+            end_idx = int(
+                set_name_to_ratio[SplitType.TRAIN] + set_name_to_ratio[SplitType.VAL]
+            )
+            self.set_usernames = self.username_list[start_idx:end_idx]
+
+        elif set_name == SplitType.TEST:
+            start_idx = int(
+                set_name_to_ratio[SplitType.TRAIN] + set_name_to_ratio[SplitType.VAL]
+            )
+
+            self.set_usernames = self.username_list[start_idx:end_idx]
+
+    def read_image_caption(self, image_path: pathlib.Path, info_path: pathlib.Path):
+
+        if isinstance(image_path, str):
+            image_path = pathlib.Path(image_path)
+
+        if isinstance(info_path, str):
+            info_path = pathlib.Path(info_path)
+
+        image_path = str(image_path.as_posix()).replace(
+            "/data", self.data_source.as_posix()
+        )
+        image_path = pathlib.Path(image_path)
+
+        info_path = info_path.as_posix().replace("/data", self.data_source.as_posix())
+
+        info_path = pathlib.Path(info_path)
+
+        try:
+            text = load_json(info_path)["edge_media_to_caption"]["edges"][0]["node"][
+                "text"
+            ]
+        except Exception:
+            log.exception(
+                "Could not find valid text for this target image, will resample",
+            )
+            return self.__getitem__(self.current_index + 1)
+
+        image = Image.open(image_path)
+
+        if self.image_transforms is not None:
+            image = self.image_transforms(image)
+
+        if self.text_transforms is not None:
+            text = self.text_transforms(text)
+
+        return image, text
+
+    def __getitem__(self, index):
+        if self.restrict_num_users is not None:
+            actual_index = index % self.restrict_num_users
+        else:
+            actual_index = index % len(self.set_usernames)
+
+        self.current_index = index
+
+        user_name = self.set_usernames[actual_index]
+        rng = np.random.RandomState(seed=index)
+        user_posts = get_ranked_filepaths_from_user(
+            username_filepath=self.table_source / user_name,
+            top_k_percent_to_return=self.top_k_percent,
+        )
+        target_post_idx = rng.choice(len(user_posts), size=1)[0]
+        target_image_path, target_info_path = user_posts[target_post_idx]
+
+        del user_posts[target_post_idx]  # remove target post from collection
+
+        random.shuffle(user_posts)
+
+        if len(user_posts) == 0:
+            logger.exception("No challenge posts found for this episode")
+            return self.__getitem__(index + 1)
+
+        num_collection_posts = min(
+            self.max_num_collection_images_per_episode,
+            random.randint(1, len(user_posts)),
+        )
+        collection_posts = user_posts[:num_collection_posts]
+
+        if len(collection_posts) == 0:
+            logger.exception("No collection posts found for this episode")
+            return self.__getitem__(index + 1)
+
+        if self.query_image_source == ChallengeSamplesSourceTypes.WITHIN_USER:
+            num_remaining_user_posts = len(user_posts) - num_collection_posts
+
+            if num_remaining_user_posts == 0:
+                logger.exception("No challenge posts found for this episode")
+                return self.__getitem__(index + 1)
+
+            num_challenge_posts = min(
+                self.max_num_query_images_per_episode,
+                random.randint(1, num_remaining_user_posts),
+            )
+            challenge_posts = user_posts[
+                num_collection_posts : num_collection_posts + num_challenge_posts
+            ]
+
+        elif self.query_image_source == ChallengeSamplesSourceTypes.ACROSS_USERS:
+            random_user_name_idx = rng.randint(1, len(self.set_usernames))
+            while self.set_usernames[random_user_name_idx] == user_name:
+                random_user_name_idx = rng.randint(1, len(self.set_usernames))
+
+            challenge_user_name = self.set_usernames[random_user_name_idx]
+
+            challenge_user_posts = get_ranked_filepaths_from_user(
+                username_filepath=self.table_source / challenge_user_name,
+                top_k_percent_to_return=self.top_k_percent,
+            )
+
+            if len(challenge_user_posts) == 0:
+                logger.exception("No challenge posts found for this episode")
+                return self.__getitem__(index + 1)
+
+            num_challenge_posts = min(
+                self.max_num_query_images_per_episode,
+                random.randint(1, len(challenge_user_posts)),
+            )
+            challenge_posts = challenge_user_posts[:num_challenge_posts]
+
+        if len(challenge_posts) == 0:
+            logger.exception("No challenge posts found for this episode")
+            return self.__getitem__(index + 1)
+
+        data_dict = defaultdict(list)
+
+        image, text = self.read_image_caption(target_image_path, target_info_path)
+
+        data_dict["target_image"] = image
+        data_dict["target_text"] = text
+
+        for image_path, info_path in collection_posts:
+            image, text = self.read_image_caption(image_path, info_path)
+            data_dict["collection_images"].append(image)
+            data_dict["collection_paths"].append(dict(image=image_path, info=info_path))
+
+        if len(data_dict["collection_images"]) == 0:
+            logger.exception("No collection posts found for this episode")
+            return self.__getitem__(index + 1)
+
+        for image_path, info_path in challenge_posts:
+            image, text = self.read_image_caption(image_path, info_path)
+            data_dict["challenge_images"].append(image)
+            data_dict["challenge_paths"].append(dict(image=image_path, info=info_path))
+
+        if len(data_dict["challenge_images"]) == 0:
+            logger.exception("No challenge posts found for this episode")
+            return self.__getitem__(index + 1)
+
+        data_dict["collection_images"] = torch.stack(data_dict["collection_images"])
+        data_dict["challenge_images"] = torch.stack(data_dict["challenge_images"])
+
+        return data_dict
+
+    def __len__(self):
+        return self.num_episodes
+
+    def get_user_name_to_post_count_dict(self):
+        return {
+            user_name: len(pq.read_table(self.table_source / user_name).to_pandas())
+            for user_name in self.set_usernames
+        }
+
+
+@configurable
 class InstagramImageTextMultiModalDatasetByUser(InstagramImageTextMultiModalDataset):
     def __init__(
         self,
@@ -616,3 +863,40 @@ class InstagramImageTextMultiModalDatasetByUser(InstagramImageTextMultiModalData
             )
 
             return False
+
+
+if __name__ == "__main__":
+    from rich import print
+
+    os.environ["HYDRA_FULL_ERROR"] = "1"
+
+    root_filepath = pathlib.Path("/data/")
+    dataset_config = InstagramImageTextMultiModalDataset.default_config
+    dataset_config_instance = dataset_config(dataset_dir=root_filepath)
+    dataset = InstagramImageTextMultiModalDatasePyArrow(
+        dataset_dir=root_filepath,
+        top_k_percent=10,
+        image_transforms=Compose([Resize((224, 224)), ToTensor()]),
+        max_num_collection_images_per_episode=25,
+        max_num_query_images_per_episode=25,
+        challenge_image_source=ChallengeSamplesSourceTypes.WITHIN_USER,
+    )
+    dataset_loader = DataLoader(
+        dataset,
+        batch_size=1,
+        shuffle=True,
+        num_workers=12,
+        drop_last=True,
+        pin_memory=True,
+    )
+    with tqdm.tqdm(total=len(dataset_loader)) as pbar:
+        for sample in dataset_loader:
+            for key, value in sample.items():
+                # if isinstance(value, list):
+                #     print(key, len(value))
+                # elif isinstance(value, torch.Tensor):
+                #     print(key, value.shape)
+                # else:
+                #     print(key, value)
+                pass
+            pbar.update(1)

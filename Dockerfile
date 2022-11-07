@@ -8,11 +8,17 @@ ADD . /CAPMultiModal
 
 WORKDIR /CAPMultiModal
 
-RUN bash install_dependencies.sh
+# #!/bin/bash
+# # Install CAPIT dependencies
+RUN echo yes | pip install hydra_zen
+RUN echo yes | pip install git+https://github.com/AntreasAntoniou/wandb_stateless_utils.git
+
+RUN apt install aptitude tree -y
+RUN echo yes | pip install itables tabulate nvitop
+RUN mamba update -c conda-forge ffmpeg starship -y
+RUN mamba install -c conda-forge itables -y
 
 ADD entrypoint.sh /entrypoint.sh
-
-ADD . /CAPMultiModal
 
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
 
