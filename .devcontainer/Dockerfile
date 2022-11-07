@@ -11,6 +11,7 @@ RUN echo yes | pip install git+https://github.com/AntreasAntoniou/wandb_stateles
 RUN apt install aptitude tree -y
 RUN echo yes | pip install itables tabulate nvitop
 RUN mamba update -c conda-forge ffmpeg starship -y
+RUN mamba install -c conda-forge itables -y
 
 ADD entrypoint.sh /entrypoint.sh
 
