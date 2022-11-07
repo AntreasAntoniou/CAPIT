@@ -662,6 +662,11 @@ class InstagramImageTextMultiModalDatasePyArrow(Dataset):
             username_filepath=self.table_source / user_name,
             top_k_percent_to_return=self.top_k_percent,
         )
+        
+        if len(user_posts) == 0:
+            logger.exception("No challenge posts found for this episode")
+            return self.__getitem__(index + 1)
+        
         target_post_idx = rng.choice(len(user_posts), size=1)[0]
         target_image_path, target_info_path = user_posts[target_post_idx]
 
