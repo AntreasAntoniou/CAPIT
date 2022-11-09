@@ -9,7 +9,6 @@ from capit.configs.callbacks import (
     LogGrads,
     ModelSummaryConfig,
     RichProgressBar,
-    SaveCheckpointsWandb,
     UploadCodeAsArtifact,
     model_checkpoint_eval,
     model_checkpoint_train,

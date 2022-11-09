@@ -8,7 +8,6 @@ from capit.base.utils import get_logger
 from dotted_dict import DottedDict
 from rich import print
 from transformers import CLIPModel, CLIPProcessor
-from transformers.models.clip.modeling_clip import CLIPOutput
 
 from capit.decorators import hydra_configurable
 
@@ -150,7 +149,7 @@ class CLIPImageTextModel(nn.Module):
         text = self.preprocess_text(text)
         if len(text.shape) == 1:
             text = text.unsqueeze(0)
-        return self.model.forward(input_ids=text, pixel_values=image)
+        return self.model.forward(input_ids=text, pixel_values=image, return_loss=True)
 
     def predict_individual(
         self, image: torch.Tensor, text: torch.Tensor
@@ -173,9 +172,9 @@ class CLIPImageTextModel(nn.Module):
         images = torch.cat([image.unsqueeze(0), challenge_images], dim=0)
         text = batch["target_text"][0]
 
-        output_dict = self.forward(image=images, text=text)
-        accuracy = (output_dict.logits_per_text.argmax(dim=-1) == 0).float().mean()
-        output_dict = output_dict.__dict__
-        output_dict["metrics"] = {"accuracy": accuracy}
+        clip_output = self.forward(image=images, text=text)
+        accuracy = (clip_output.logits_per_text.argmax(dim=-1) == 0).float().mean()
+        output_dict = clip_output.__dict__
+        output_dict["metrics"] = {"accuracy": accuracy, "loss": clip_output.loss}
 
         return output_dict["loss"], output_dict
