@@ -106,17 +106,6 @@ def train_eval(config: DictConfig):
                         )
                     )
 
-                # elif "SaveCheckpointsWandb" in cb_conf["_target_"]:
-                #     log.info(
-                #         f"Instantiating <{cb_conf._target_} with {wandb_checkpointer}>"
-                #     )
-                #     callbacks.append(
-                #         instantiate(
-                #             config=cb_conf,
-                #             wandb_checkpointer=wandb_checkpointer,
-                #             _recursive_=False,
-                #         )
-                #     )
                 else:
                     log.info(f"Instantiating callback <{cb_conf._target_}>")
                     callbacks.append(instantiate(cb_conf))

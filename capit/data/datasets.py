@@ -662,11 +662,11 @@ class InstagramImageTextMultiModalDatasePyArrow(Dataset):
             username_filepath=self.table_source / user_name,
             top_k_percent_to_return=self.top_k_percent,
         )
-        
+
         if len(user_posts) == 0:
             logger.exception("No challenge posts found for this episode")
             return self.__getitem__(index + 1)
-        
+
         target_post_idx = rng.choice(len(user_posts), size=1)[0]
         target_image_path, target_info_path = user_posts[target_post_idx]
 
@@ -680,7 +680,7 @@ class InstagramImageTextMultiModalDatasePyArrow(Dataset):
 
         num_collection_posts = min(
             self.max_num_collection_images_per_episode,
-            random.randint(1, len(user_posts)),
+            len(user_posts),
         )
         collection_posts = user_posts[:num_collection_posts]
 
@@ -697,7 +697,7 @@ class InstagramImageTextMultiModalDatasePyArrow(Dataset):
 
             num_challenge_posts = min(
                 self.max_num_query_images_per_episode,
-                random.randint(1, num_remaining_user_posts),
+                num_remaining_user_posts,
             )
             challenge_posts = user_posts[
                 num_collection_posts : num_collection_posts + num_challenge_posts
@@ -721,7 +721,7 @@ class InstagramImageTextMultiModalDatasePyArrow(Dataset):
 
             num_challenge_posts = min(
                 self.max_num_query_images_per_episode,
-                random.randint(1, len(challenge_user_posts)),
+                len(challenge_user_posts),
             )
             challenge_posts = challenge_user_posts[:num_challenge_posts]
 

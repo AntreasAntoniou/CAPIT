@@ -8,7 +8,7 @@ from torch.optim import AdamW
 
 @hydrated_dataclass(target=AdamW)
 class AdamWOptimizerConfig:
-    lr: float = 2e-6
+    lr: float = 1e-5
     weight_decay: float = 0.00000
     amsgrad: bool = False
     betas: List = field(default_factory=lambda: [0.9, 0.999])

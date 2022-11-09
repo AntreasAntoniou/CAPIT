@@ -17,7 +17,11 @@ from hydra_zen import builds, hydrated_dataclass
 @hydrated_dataclass(target=InstagramImageTextDataModule)
 class InstagramImageTextMultiModalDataModuleConfig:
     dataset_config: Any = InstagramImageTextMultiModalDatasePyArrowConfig(
-        dataset_dir=DATASET_DIR, image_transforms=None
+        dataset_dir=DATASET_DIR,
+        image_transforms=None,
+        top_k_percent="${top_percent_to_keep}",
+        max_num_collection_images_per_episode="${max_num_collection_images}",
+        max_num_query_images_per_episode="${max_num_challenge_images}",
     )
     data_loader_config: Any = DataLoaderConfig()
     shuffle_train: bool = True

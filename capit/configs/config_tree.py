@@ -69,12 +69,24 @@ def get_str(x: Any) -> str:
 
 
 def generate_name(
-    prefix, optimizer, dataset_name, model_name, pretrained, fine_tune, seed
+    prefix,
+    top_percent_to_keep,
+    num_collection_images,
+    num_challenge_images,
+    optimizer,
+    dataset_name,
+    model_name,
+    pretrained,
+    fine_tune,
+    seed,
 ) -> str:
     process_string_fn = lambda x: get_remove_redundant_words(
         get_lower(get_last_bit(get_remove_slashes(get_str(x))))
     )
     name = f"{process_string_fn(prefix)}_"
+    name += f"top{process_string_fn(top_percent_to_keep)}_"
+    name += f"col{process_string_fn(num_collection_images)}_"
+    name += f"chal{process_string_fn(num_challenge_images)}_"
     name += f"{process_string_fn(optimizer)}_"
     name += f"{process_string_fn(dataset_name)}_"
     name += f"{process_string_fn(model_name)}_"
@@ -104,6 +116,9 @@ class Config:
     ignore_warnings: bool = True
     logging_level: str = "INFO"
     prefix: str = "exp"
+    top_percent_to_keep: int = 10
+    max_num_challenge_images: int = 10
+    max_num_collection_images: int = 10
     # evaluate on test set, using best model weights achieved during training
     # lightning chooses best weights based on metric specified in checkpoint
     # callback
