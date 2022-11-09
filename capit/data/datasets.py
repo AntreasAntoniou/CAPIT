@@ -28,7 +28,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import Compose, Resize, ToTensor, RandomCrop
 from capit.data.transforms import ToThreeChannels
 
-from capit.decorators import configurable
+from capit.decorators import hydra_configurable
 
 log = get_logger(__name__)
 
@@ -90,7 +90,7 @@ def generate_post_paths_from_user_name_and_post_id(
     return image_path, info_path
 
 
-@configurable
+@hydra_configurable
 class DummyMultiModalDataset(Dataset):
     def __init__(
         self,
@@ -234,7 +234,7 @@ def get_ranked_filepaths_from_user(
     return ranked_filepath_list[:top_k_percent_to_return]
 
 
-@configurable
+@hydra_configurable
 class InstagramImageTextMultiModalDataset(Dataset):
     def __init__(
         self,
@@ -545,7 +545,7 @@ def default_image_transforms():
 default_image_transforms_config = builds(default_image_transforms)
 
 
-@configurable
+@hydra_configurable
 class InstagramImageTextMultiModalDatasePyArrow(Dataset):
     def __init__(
         self,
@@ -769,7 +769,7 @@ class InstagramImageTextMultiModalDatasePyArrow(Dataset):
         }
 
 
-@configurable
+@hydra_configurable
 class InstagramImageTextMultiModalDatasetByUser(InstagramImageTextMultiModalDataset):
     def __init__(
         self,

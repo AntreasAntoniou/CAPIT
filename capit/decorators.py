@@ -3,7 +3,7 @@ from typing import Callable
 from hydra_zen import builds, instantiate
 
 
-def configurable(func: Callable) -> Callable:
+def hydra_configurable(func: Callable) -> Callable:
     func.__configurable__ = True
     func.default_config = builds(func, populate_full_signature=True)
     return func
@@ -15,7 +15,7 @@ def check_if_configurable(func: Callable) -> bool:
 
 if __name__ == "__main__":
 
-    @configurable
+    @hydra_configurable
     class DummyObject(object):
         def __init__(self, weight_decay: float, random_crap: str):
             self.weight_decay = weight_decay

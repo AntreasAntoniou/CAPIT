@@ -74,6 +74,8 @@ def generate_name(
     num_collection_images,
     num_challenge_images,
     optimizer,
+    learning_rate,
+    weight_decay,
     dataset_name,
     model_name,
     pretrained,
@@ -83,16 +85,18 @@ def generate_name(
     process_string_fn = lambda x: get_remove_redundant_words(
         get_lower(get_last_bit(get_remove_slashes(get_str(x))))
     )
-    name = f"{process_string_fn(prefix)}_"
+    name = f"{process_string_fn(prefix)}"
     name += f"top{process_string_fn(top_percent_to_keep)}_"
     name += f"col{process_string_fn(num_collection_images)}_"
     name += f"chal{process_string_fn(num_challenge_images)}_"
-    name += f"{process_string_fn(optimizer)}_"
-    name += f"{process_string_fn(dataset_name)}_"
-    name += f"{process_string_fn(model_name)}_"
-    name += f"{process_string_fn(pretrained)}_"
-    name += f"{process_string_fn(fine_tune)}_"
-    name += f"{process_string_fn(seed)}"
+    name += f"opt{process_string_fn(optimizer)}_"
+    name += f"lr{process_string_fn(learning_rate)}_"
+    name += f"wd{process_string_fn(weight_decay)}_"
+    name += f"d{process_string_fn(dataset_name)}_"
+    name += f"m{process_string_fn(model_name)}_"
+    name += f"p{process_string_fn(pretrained)}_"
+    name += f"f{process_string_fn(fine_tune)}_"
+    name += f"s{process_string_fn(seed)}"
     return name
 
 
@@ -115,7 +119,7 @@ class Config:
     # disable python warnings if they annoy you
     ignore_warnings: bool = True
     logging_level: str = "INFO"
-    prefix: str = "exp"
+    prefix: str = ""
     top_percent_to_keep: int = 10
     max_num_challenge_images: int = 10
     max_num_collection_images: int = 10
@@ -141,6 +145,11 @@ class Config:
     name: str = generate_name(
         prefix="${prefix}",
         optimizer="${optimizer._target_}",
+        learning_rate="${optimizer.lr}",
+        weight_decay="${optimizer.weight_decay}",
+        top_percent_to_keep="${top_percent_to_keep}",
+        num_collection_images="${max_num_collection_images}",
+        num_challenge_images="${max_num_challenge_images}",
         dataset_name="${datamodule.dataset_config.challenge_image_source}",
         model_name="${model.model_name_or_path}",
         pretrained="${model.pretrained}",

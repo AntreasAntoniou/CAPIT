@@ -18,7 +18,7 @@ from capit.lightning.train_eval_agent import TrainingEvaluationAgent
 log = utils.get_logger(__name__)
 
 
-def checkpoint_setup(config, restore_agent: StatelessCheckpointingWandb):
+def checkpoint_setup(config):
     checkpoint_path = None
     experiment_dir = pathlib.Path(f"{config.current_experiment_dir}")
 
@@ -26,18 +26,9 @@ def checkpoint_setup(config, restore_agent: StatelessCheckpointingWandb):
 
         if not experiment_dir.exists():
             experiment_dir.mkdir(exist_ok=True, parents=True)
+            return None
 
-        log.info("Downloading latest checkpoint from wandb")
-        try:
-            checkpoint_path = restore_agent.restore_latest(
-                store_dir=os.environ["MODEL_DIR"], model_name=config.name
-            )
-            log.info("Continue from existing checkpoint")
-        except Exception:
-            log.exception(
-                "Failed to download latest checkpoint from wandb, starting from scratch"
-            )
-            checkpoint_path = None
+        checkpoint_path = experiment_dir / "checkpoints" / "last.ckpt"
 
         log.info(checkpoint_path)
 
@@ -50,7 +41,10 @@ def checkpoint_setup(config, restore_agent: StatelessCheckpointingWandb):
     return checkpoint_path
 
 
-def train_eval(config: DictConfig):
+from capit.configs.config_tree import Config
+
+
+def train_eval(config: Config):
     """Contains training pipeline.
     Instantiates all PyTorch Lightning objects from config.
 
@@ -61,11 +55,10 @@ def train_eval(config: DictConfig):
         Optional[float]: Metric score for hyperparameter optimization.
     """
 
-    if config.get("seed"):
-        seed_everything(config.seed, workers=True)
+    seed_everything(config.seed, workers=True)
     # --------------------------------------------------------------------------------
     # Create or recover checkpoint path to resume from
-    checkpoint_path = None
+    checkpoint_path = checkpoint_setup(config)
     # --------------------------------------------------------------------------------
     # Instantiate Lightning DataModule for task
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")

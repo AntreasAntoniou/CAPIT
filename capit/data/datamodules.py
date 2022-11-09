@@ -6,7 +6,7 @@ from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS
 
-from capit.decorators import configurable
+from capit.decorators import hydra_configurable
 
 
 class DataModule(LightningDataModule):
@@ -48,7 +48,7 @@ class SplitType:
     TEST = "test"
 
 
-@configurable
+@hydra_configurable
 class InstagramImageTextDataModule(DataModule):
     def __init__(
         self,
