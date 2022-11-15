@@ -17,8 +17,10 @@ def collect_config_store():
     from capit.configs.config_tree import Config, base_callbacks, wandb_callbacks
     from capit.configs.datamodules import InstagramImageTextMultiModalDataModuleConfig
     from capit.configs.hydra import add_hydra_configs
-    from capit.configs.loggers import (TensorboardLoggerConfig,
-                                       WeightsAndBiasesLoggerConfig)
+    from capit.configs.loggers import (
+        TensorboardLoggerConfig,
+        WeightsAndBiasesLoggerConfig,
+    )
     from capit.configs.mode import BaseMode
     from capit.configs.models import CLIPImageTextMultiModalDatasetConfig
     from capit.configs.optimizers import AdamWOptimizerConfig

@@ -31,7 +31,8 @@ def checkpoint_setup(config):
         checkpoint_path = experiment_dir / "checkpoints" / "last.ckpt"
 
         log.info(checkpoint_path)
-
+    elif config.checkpoint_path is not None:
+        checkpoint_path = config.checkpoint_path
     else:
 
         log.info("Starting from scratch")

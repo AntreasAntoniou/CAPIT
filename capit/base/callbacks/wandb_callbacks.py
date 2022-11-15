@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import numpy as np
+from omegaconf import DictConfig
 import pytorch_lightning
 import wandb
 from capit.base import utils
@@ -11,9 +12,8 @@ from pytorch_lightning.callbacks import ModelSummary
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
 from torch.optim import Optimizer
-from wandbless.checkpointing import StatelessCheckpointingWandb
 
-log = utils.get_logger(__name__)
+logger = utils.get_logger(__name__)
 
 
 def get_wandb_logger(trainer: Trainer) -> WandbLogger:
@@ -53,7 +53,7 @@ class UploadCodeAsArtifact(Callback):
         self.code_dir = code_dir
 
     @rank_zero_only
-    def on_train_start(self, trainer, pl_module):
+    def on_train_start(self, trainer: Trainer, pl_module: LightningModule):
         logger = get_wandb_logger(trainer=trainer)
         experiment = logger.experiment
 
@@ -129,7 +129,7 @@ class LogConfigInformation(Callback):
         https://wandb.ai/wandb/wandb-lightning/reports/Image-Classification-using-PyTorch-Lightning--VmlldzoyODk1NzY
     """
 
-    def __init__(self, exp_config=None):
+    def __init__(self, exp_config: DictConfig = None):
         super().__init__()
         self.done = False
         self.exp_config = exp_config
@@ -184,4 +184,4 @@ class PostBuildSummary(Callback):
         self, trainer: "Trainer", pl_module: "LightningModule"
     ) -> None:
         summary = ModelSummary(model=pl_module, max_depth=self.max_depth)
-        log.info(summary)
+        logger.info(summary)

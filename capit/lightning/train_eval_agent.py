@@ -54,7 +54,7 @@ class TrainingEvaluationAgent(LightningModule):
             batch,
             batch_idx,
         )
-        self.collect_metrics_step(output_dict.metrics, phase_name="train")
+        self.collect_metrics_step(output_dict["metrics"], phase_name="train")
         return opt_loss
 
     def validation_step(self, batch, batch_idx):
@@ -62,14 +62,14 @@ class TrainingEvaluationAgent(LightningModule):
             batch,
             batch_idx,
         )
-        self.collect_metrics_step(output_dict.metrics, phase_name="validation")
+        self.collect_metrics_step(output_dict["metrics"], phase_name="validation")
 
     def test_step(self, batch, batch_idx):
         _, output_dict = self.model.step(
             batch,
             batch_idx,
         )
-        self.collect_metrics_step(output_dict.metrics, phase_name="test")
+        self.collect_metrics_step(output_dict["metrics"], phase_name="test")
 
     def configure_optimizers(self):
         optimizer = instantiate(
