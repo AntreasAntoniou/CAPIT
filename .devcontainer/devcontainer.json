@@ -1,6 +1,6 @@
 {
   "build": { "dockerfile": "Dockerfile" },
-  "runArgs": ["--gpus", "all", "-P", "--shm-size=80gb", "--env=.env"],
+  "runArgs": ["--gpus", "all", "-P", "--shm-size=80gb"],
   "customizations": {
     // Configure properties specific to VS Code.
     "vscode": {
