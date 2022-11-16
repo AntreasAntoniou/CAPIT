@@ -6,7 +6,6 @@
     "vscode": {
       // Set *default* container specific settings.json values on container create.
       "settings": {
-        "sourcery.token": "user_PeY4FaK8nyKtXmunufkAMbgkIGAagclUXJxFozlhJrGfVQ5RUL0x3URT0VA",
         "github.copilot.enable": {
           "*": true
         },
