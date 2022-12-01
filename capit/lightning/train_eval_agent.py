@@ -75,11 +75,35 @@ class TrainingEvaluationAgent(LightningModule):
         optimizer = instantiate(
             config=self.optimizer_config,
             params=self.model.parameters(),
+            lr=1e-6,
             _recursive_=False,
         )
         for key, value in self.named_parameters():
-            log.info(f"Parameter {key} requires grad {value.requires_grad}")
-        return optimizer
+            log.info(
+                f"Parameter {key} -> {value.shape} requires grad {value.requires_grad}"
+            )
+        # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        #     optimizer=optimizer,
+        #     eta_min=float(self.optimizer_config.lr / 100),
+        #     T_max=50000,
+        #     verbose=True,
+        # )
+        # scheduler_dict = dict(
+        #     scheduler=scheduler,
+        #     interval="step",
+        #     name="lr_scheduler",
+        # )
+        # print(
+        #     scheduler_dict,
+        #     dict(
+        #         eta_min=float(self.optimizer_config.lr / 100),
+        #         T_max=50000,
+        #         verbose=True,
+        #     ),
+        # )
+        return [optimizer]
+
+    # , [scheduler_dict]
 
     def collect_metrics_step(self, metrics_dict, phase_name):
         for metric_key, computed_value in metrics_dict.items():

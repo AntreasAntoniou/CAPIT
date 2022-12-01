@@ -1,26 +1,26 @@
 import argparse
+import pathlib
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
-import pathlib
 from typing import List
+
+import torch
+import tqdm
 from hydra_zen import instantiate
 from rich import print
 from rich.traceback import install
-import torch
 from torch.utils.data import DataLoader
-import tqdm
 from yaml import parse
+
 from capit.base.utils.loggers import get_logger
 from capit.base.utils.tf_babysitting import configure_tf_memory_growth
 from capit.configs.base import DataLoaderConfig
-
 from capit.data.datasets import (
     InstagramImageTextMultiModalDataset,
     InstagramImageTextMultiModalDatasetByUser,
     SplitType,
 )
-
 from capit.models.image_text_models import CLIPImageTextModel
 
 install()

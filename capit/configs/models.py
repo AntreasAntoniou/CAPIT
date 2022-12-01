@@ -1,9 +1,13 @@
 from dataclasses import dataclass
 from typing import Any
 
-from capit.base.utils.typing_utils import get_module_import_path
-from capit.models.image_text_models import CLIPImageTextModel
 from hydra_zen import hydrated_dataclass
+
+from capit.base.utils.typing_utils import get_module_import_path
+from capit.models.image_text_models import (
+    CLIPImageTextModel,
+    CLIPWithPostProcessingImageTextModel,
+)
 
 
 @dataclass
@@ -14,6 +18,12 @@ class ModelNames:
 
 @hydrated_dataclass(target=CLIPImageTextModel)
 class CLIPImageTextMultiModalDatasetConfig:
+    model_name_or_path: str = ModelNames.clip_vit_large_patch14
+    pretrained: bool = True
+
+
+@hydrated_dataclass(target=CLIPWithPostProcessingImageTextModel)
+class CLIPWithPostProcessingImageTextModelConfig:
     model_name_or_path: str = ModelNames.clip_vit_large_patch14
     pretrained: bool = True
     fine_tunable: bool = False

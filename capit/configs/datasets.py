@@ -1,17 +1,17 @@
 from dataclasses import dataclass
 from typing import Any, Optional
 
+from hydra_zen import builds, hydrated_dataclass
+
 from capit.base.utils.typing_utils import get_module_import_path
 from capit.configs.base import DatasetConfig
 from capit.data.datasets import (
     ChallengeSamplesSourceTypes,
     DummyMultiModalDataset,
-    InstagramImageTextMultiModalDataset,
     InstagramImageTextMultiModalDatasePyArrow,
+    InstagramImageTextMultiModalDataset,
     SplitType,
 )
-from hydra_zen import builds, hydrated_dataclass
-
 
 DummyMultiModalDatasetConfig = DummyMultiModalDataset.default_config
 

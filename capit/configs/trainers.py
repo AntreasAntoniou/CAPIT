@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from typing import Any, Union
 
-from capit.base.utils.typing_utils import get_module_import_path
-from capit.configs.string_variables import CURRENT_EXPERIMENT_DIR
 from hydra_zen import hydrated_dataclass
 from pytorch_lightning import Trainer
 from pytorch_lightning.plugins import DDPPlugin
+
+from capit.base.utils.typing_utils import get_module_import_path
+from capit.configs.string_variables import CURRENT_EXPERIMENT_DIR
 
 
 @hydrated_dataclass(target=Trainer)

@@ -1,17 +1,17 @@
 from dataclasses import dataclass
 from typing import Any
 
+from hydra_zen import builds, hydrated_dataclass
+from torchvision.transforms import Compose, RandomCrop, Resize, ToTensor
+
 from capit.base.utils.typing_utils import get_module_import_path
 from capit.configs.base import DataLoaderConfig
 from capit.configs.datasets import (
     InstagramImageTextMultiModalDatasePyArrowConfig,
     InstagramImageTextMultiModalDatasetConfig,
 )
-from torchvision.transforms import Compose, Resize, ToTensor, RandomCrop
-
 from capit.configs.string_variables import DATASET_DIR
 from capit.data.datamodules import InstagramImageTextDataModule
-from hydra_zen import builds, hydrated_dataclass
 
 
 @hydrated_dataclass(target=InstagramImageTextDataModule)

@@ -1,33 +1,30 @@
-from asyncio.log import logger
-from math import floor
 import os
 import pathlib
 import random
+import sys
+from asyncio.log import logger
 from collections import defaultdict
 from dataclasses import dataclass
+from math import floor
 from typing import Any, Optional, Union
-from hydra_zen import builds, instantiate
 
 import numpy as np
+import pandas as pd
+import pyarrow as pa
+import pyarrow.dataset as ds
+import pyarrow.parquet as pq
 import torch
 import tqdm
-
-import pathlib
-import pyarrow as pa
-import pyarrow.parquet as pq
-import pandas as pd
-import pyarrow.dataset as ds
-import sys
+from dotted_dict import DottedDict
+from hydra_zen import builds, instantiate
+from PIL import Image
+from torch.utils.data import DataLoader, Dataset
+from torchvision.transforms import Compose, RandomCrop, Resize, ToTensor
 
 from capit.base.utils.loggers import get_logger
 from capit.base.utils.storage import load_json, save_json
 from capit.configs.base import DatasetDirectoryConfig, ImageShape, ModalityConfig
-from dotted_dict import DottedDict
-from PIL import Image
-from torch.utils.data import Dataset, DataLoader
-from torchvision.transforms import Compose, Resize, ToTensor, RandomCrop
 from capit.data.transforms import ToThreeChannels
-
 from capit.decorators import hydra_configurable
 
 log = get_logger(__name__)

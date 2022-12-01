@@ -2,14 +2,20 @@ from dataclasses import MISSING, dataclass
 from datetime import timedelta
 from typing import Dict, Optional
 
-from capit.base.callbacks.wandb_callbacks import (LogConfigInformation, LogGrads,
-                                                  SaveCheckpointsWandb,
-                                                  UploadCodeAsArtifact)
+from hydra_zen import builds, hydrated_dataclass
+from pytorch_lightning.callbacks import (
+    LearningRateMonitor,
+    ModelCheckpoint,
+    RichModelSummary,
+    TQDMProgressBar,
+)
+
+from capit.base.callbacks.wandb_callbacks import (
+    LogConfigInformation,
+    UploadCodeAsArtifact,
+)
 from capit.base.utils.typing_utils import get_module_import_path
 from capit.configs.string_variables import CHECKPOINT_DIR
-from hydra_zen import builds, hydrated_dataclass
-from pytorch_lightning.callbacks import (LearningRateMonitor, ModelCheckpoint,
-                                         RichModelSummary, TQDMProgressBar)
 
 
 @hydrated_dataclass(target=timedelta)
@@ -43,7 +49,7 @@ class RichProgressBar:
 
 
 @hydrated_dataclass(target=LearningRateMonitor)
-class LearningRateMonitor:
+class LearningRateMonitorConfig:
     logging_interval: str = "step"
 
 
@@ -52,17 +58,10 @@ class UploadCodeAsArtifact:
     code_dir: str = "${code_dir}"
 
 
-@hydrated_dataclass(target=LogGrads)
-class LogGrads:
-    refresh_rate: int = 100
-
-
 @hydrated_dataclass(target=LogConfigInformation)
 class LogConfigInformation:
     exp_config: Optional[Dict] = None
 
-
-SaveCheckpointsWandb = builds(SaveCheckpointsWandb, populate_full_signature=True)
 
 model_checkpoint_eval: ModelCheckpointingConfig = ModelCheckpointingConfig(
     monitor="validation/accuracy_epoch",
@@ -76,7 +75,7 @@ model_checkpoint_eval: ModelCheckpointingConfig = ModelCheckpointingConfig(
 )
 
 model_checkpoint_train = ModelCheckpointingConfig(
-    monitor="training/loss_epoch",
+    monitor="training/loss_step",
     save_on_train_epoch_end=True,
     save_top_k=0,
     save_last=True,

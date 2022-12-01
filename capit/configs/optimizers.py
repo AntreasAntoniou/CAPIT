@@ -1,9 +1,10 @@
 from dataclasses import MISSING, dataclass, field
 from typing import List
 
-from capit.base.utils.typing_utils import get_module_import_path
 from hydra_zen import hydrated_dataclass
 from torch.optim import AdamW
+
+from capit.base.utils.typing_utils import get_module_import_path
 
 
 @hydrated_dataclass(target=AdamW)

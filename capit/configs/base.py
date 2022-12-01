@@ -2,10 +2,11 @@ import multiprocessing
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from capit.base.utils.typing_utils import get_module_import_path
-from capit.configs.string_variables import BATCH_SIZE
 from hydra_zen import hydrated_dataclass
 from torch.utils.data import DataLoader
+
+from capit.base.utils.typing_utils import get_module_import_path
+from capit.configs.string_variables import BATCH_SIZE
 
 
 @dataclass

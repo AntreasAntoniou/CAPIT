@@ -3,10 +3,11 @@ import os
 from dataclasses import dataclass, field
 from typing import List, Optional, Union
 
-from capit.base.utils.typing_utils import get_module_import_path
-from capit.configs.string_variables import CURRENT_EXPERIMENT_DIR, EXPERIMENT_NAME
 from hydra_zen import hydrated_dataclass
 from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
+
+from capit.base.utils.typing_utils import get_module_import_path
+from capit.configs.string_variables import CURRENT_EXPERIMENT_DIR, EXPERIMENT_NAME
 
 
 @hydrated_dataclass(target=WandbLogger)

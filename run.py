@@ -22,7 +22,10 @@ def collect_config_store():
         WeightsAndBiasesLoggerConfig,
     )
     from capit.configs.mode import BaseMode
-    from capit.configs.models import CLIPImageTextMultiModalDatasetConfig
+    from capit.configs.models import (
+        CLIPImageTextMultiModalDatasetConfig,
+        CLIPWithPostProcessingImageTextModelConfig,
+    )
     from capit.configs.optimizers import AdamWOptimizerConfig
     from capit.configs.trainers import BaseTrainer, DDPTrainer, DPTrainer, MPSTrainer
 
@@ -65,8 +68,14 @@ def collect_config_store():
     ###################################################################################
     config_store.store(
         group="model",
-        name="clip-image-text",
+        name="clip",
         node=CLIPImageTextMultiModalDatasetConfig,
+    )
+
+    config_store.store(
+        group="model",
+        name="clip-with-pp",
+        node=CLIPWithPostProcessingImageTextModelConfig,
     )
     ###################################################################################
     config_store.store(

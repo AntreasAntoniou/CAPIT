@@ -4,7 +4,6 @@ from typing import List, Optional
 
 import pytorch_lightning
 import torch
-import wandb
 from hydra_zen import instantiate
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, LightningDataModule, Trainer, seed_everything
@@ -12,6 +11,7 @@ from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.tuner.tuning import Tuner
 from wandbless.checkpointing import StatelessCheckpointingWandb
 
+import wandb
 from capit.base import utils
 from capit.lightning.train_eval_agent import TrainingEvaluationAgent
 

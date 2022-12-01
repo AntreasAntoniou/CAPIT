@@ -2,18 +2,18 @@ import os
 from dataclasses import MISSING, dataclass, field
 from typing import Any, List, Optional
 
+from omegaconf import OmegaConf
+
 from capit.base.utils import get_logger
 from capit.configs.callbacks import (
-    LearningRateMonitor,
+    LearningRateMonitorConfig,
     LogConfigInformation,
-    LogGrads,
     ModelSummaryConfig,
     RichProgressBar,
     UploadCodeAsArtifact,
     model_checkpoint_eval,
     model_checkpoint_train,
 )
-from omegaconf import OmegaConf
 
 log = get_logger(__name__)
 
@@ -32,9 +32,7 @@ overrides = []
 
 
 def to_str(x):
-    if isinstance(x, str):
-        return x
-    return str(x)
+    return x if isinstance(x, str) else str(x)
 
 
 OmegaConf.register_new_resolver("last_bit", lambda x: x.split(".")[-1])
@@ -42,25 +40,29 @@ OmegaConf.register_new_resolver("lower", lambda x: x.lower())
 OmegaConf.register_new_resolver("remove_slashes", lambda x: x.replace("/", "-"))
 OmegaConf.register_new_resolver(
     "remove_redundant_words",
-    lambda x: x.replace("scheme", "").replace("module", "").replace("config", ""),
+    lambda x: x.replace("scheme", "")
+    .replace("module", "")
+    .replace("config", "")
+    .replace("openai", "")
+    .replace("patch", ""),
 )
 OmegaConf.register_new_resolver("to_str", to_str)
 
 
 def get_last_bit(x: str) -> str:
-    return "${last_bit:" + str(x) + "}"
+    return "${last_bit:" + x + "}"
 
 
 def get_lower(x: str) -> str:
-    return "${lower:" + str(x) + "}"
+    return "${lower:" + x + "}"
 
 
 def get_remove_slashes(x: str) -> str:
-    return "${remove_slashes:" + str(x) + "}"
+    return "${remove_slashes:" + x + "}"
 
 
 def get_remove_redundant_words(x: str) -> str:
-    return "${remove_redundant_words:" + str(x) + "}"
+    return "${remove_redundant_words:" + x + "}"
 
 
 def get_str(x: Any) -> str:
@@ -78,7 +80,6 @@ def generate_name(
     dataset_name,
     model_name,
     pretrained,
-    fine_tune,
     seed,
 ) -> str:
     process_string_fn = lambda x: get_remove_redundant_words(
@@ -94,7 +95,6 @@ def generate_name(
     name += f"d{process_string_fn(dataset_name)}_"
     name += f"m{process_string_fn(model_name)}_"
     name += f"p{process_string_fn(pretrained)}_"
-    name += f"f{process_string_fn(fine_tune)}_"
     name += f"s{process_string_fn(seed)}"
     return name
 
@@ -152,7 +152,6 @@ class Config:
         dataset_name="${datamodule.dataset_config.challenge_image_source}",
         model_name="${model.model_name_or_path}",
         pretrained="${model.pretrained}",
-        fine_tune="${model.fine_tunable}",
         seed=seed,
     )
 
@@ -165,7 +164,7 @@ base_callbacks = dict(
     model_checkpoint_train=model_checkpoint_train,
     model_summary=ModelSummaryConfig(),
     progress_bar=RichProgressBar(),
-    lr_monitor=LearningRateMonitor(),
+    lr_monitor=LearningRateMonitorConfig(),
 )
 
 wandb_callbacks = dict(
@@ -173,8 +172,7 @@ wandb_callbacks = dict(
     model_checkpoint_train=model_checkpoint_train,
     model_summary=ModelSummaryConfig(),
     progress_bar=RichProgressBar(),
-    lr_monitor=LearningRateMonitor,
+    lr_monitor=LearningRateMonitorConfig(),
     code_upload=UploadCodeAsArtifact(),
-    log_grads=LogGrads(),
     log_config=LogConfigInformation(),
 )

@@ -3,15 +3,16 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import numpy as np
-from omegaconf import DictConfig
 import pytorch_lightning
-import wandb
-from capit.base import utils
+from omegaconf import DictConfig
 from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.callbacks import ModelSummary
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
 from torch.optim import Optimizer
+
+import wandb
+from capit.base import utils
 
 logger = utils.get_logger(__name__)
 
@@ -65,64 +66,6 @@ class UploadCodeAsArtifact(Callback):
         experiment.log_artifact(code)
 
 
-class LogGrads(Callback):
-    """Logs a validation batch and their predictions to wandb.
-    Example adapted from:
-        https://wandb.ai/wandb/wandb-lightning/reports/Image-Classification-using-PyTorch-Lightning--VmlldzoyODk1NzY
-    """
-
-    def __init__(self, refresh_rate: int = 100):
-        super().__init__()
-        self.refresh_rate = refresh_rate
-
-    @rank_zero_only
-    def on_before_optimizer_step(
-        self,
-        trainer: pytorch_lightning.Trainer,
-        pl_module: LightningModule,
-        optimizer: Optimizer,
-        opt_idx: int,
-    ) -> None:
-
-        if trainer.global_step % self.refresh_rate == 0:
-            grad_dict = {
-                name: param.grad.cpu().detach().abs().mean()
-                for name, param in pl_module.named_parameters()
-                if param.requires_grad and param.grad is not None
-            }
-
-            modality_keys = ["image", "video", "audio", "text"]
-
-            modality_specific_grad_summary = {
-                modality_key: [
-                    value for key, value in grad_dict.items() if modality_key in key
-                ]
-                for modality_key in modality_keys
-            }
-
-            modality_specific_grad_summary = {
-                key: {"x": np.arange(len(value)), "y": value}
-                for key, value in modality_specific_grad_summary.items()
-            }
-
-            logger = get_wandb_logger(trainer=trainer)
-            experiment = logger.experiment
-
-            for key, value in modality_specific_grad_summary.items():
-                data = [[x, y] for (x, y) in zip(value["x"], value["y"])]
-                table = wandb.Table(data=data, columns=["x", "y"])
-                experiment.log(
-                    {
-                        f"{key}_grad_summary": wandb.plot.line(
-                            table,
-                            "x",
-                            "y",
-                            title=f"{key} gradient summary",
-                        )
-                    }
-                )
-
-
 class LogConfigInformation(Callback):
     """Logs a validation batch and their predictions to wandb.
     Example adapted from:
@@ -148,40 +91,3 @@ class LogConfigInformation(Callback):
 
             logger.log_hyperparams(hparams)
             self.done = True
-
-
-class SaveCheckpointsWandb(Callback):
-    """Saves checkpoints to wandb."""
-
-    def __init__(self, wandb_checkpointer: Optional[Any] = None):
-        super().__init__()
-        self.wandb_checkpointer = wandb_checkpointer
-
-    @rank_zero_only
-    def on_save_checkpoint(
-        self,
-        trainer: Trainer,
-        pl_module: LightningModule,
-        checkpoint: Dict[str, Any],
-    ) -> None:
-
-        self.wandb_checkpointer.save(
-            model=checkpoint,
-            store_dir=os.environ["MODEL_DIR"],
-        )
-
-
-class PostBuildSummary(Callback):
-    """
-    Callback to log model summary after model is built
-    """
-
-    def __init__(self, max_depth):
-        super(PostBuildSummary, self).__init__()
-        self.max_depth = max_depth
-
-    def on_sanity_check_end(
-        self, trainer: "Trainer", pl_module: "LightningModule"
-    ) -> None:
-        summary = ModelSummary(model=pl_module, max_depth=self.max_depth)
-        logger.info(summary)
