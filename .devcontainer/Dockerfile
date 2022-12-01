@@ -2,7 +2,6 @@ FROM ghcr.io/antreasantoniou/gate:0.3.0
 
 SHELL ["conda", "run", "-n", "gate", "/bin/bash", "-c"]
 
-
 # #!/bin/bash
 # # Install CAPIT dependencies
 RUN echo yes | pip install hydra_zen
@@ -12,8 +11,9 @@ RUN apt install aptitude tree -y
 RUN echo yes | pip install itables tabulate nvitop
 RUN mamba update -c conda-forge ffmpeg starship -y
 RUN mamba install -c conda-forge itables -y
+RUN mamba install -c conda-forge ipykernel gradio -y
 RUN conda init fish
-RUN echo "starship init fish | source" > ~/.config/fish/config.fish 
+RUN echo "starship init fish | source" >~/.config/fish/config.fish
 
 ADD entrypoint.sh /entrypoint.sh
 
