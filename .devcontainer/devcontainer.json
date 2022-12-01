@@ -29,6 +29,5 @@
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": []
     }
-  },
-  "mounts": [{ "source": "/mnt/nas", "target": "/data", "type": "bind" }]
+  }
 }

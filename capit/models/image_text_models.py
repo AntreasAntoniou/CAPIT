@@ -19,60 +19,6 @@ from capit.models.helpers import contrastive_logits_labels
 log = get_logger(__name__)
 
 
-def resize_custom(image, target_image_shape, interpolation="bilinear", debug=False):
-    """
-    Resize an image to a target size.
-    Parameters
-    ----------
-    image
-    target_image_shape
-    interpolation
-
-    Returns
-    -------
-
-    """
-    target_w = target_image_shape[1]
-    target_h = target_image_shape[2]
-
-    current_w = image.shape[2]
-    current_h = image.shape[3]
-
-    if current_w > target_w:
-        image = image[:, :, :target_w]
-        if debug:
-            print(
-                f"Condition met: current_w > target_w: Resized image from {current_w} to {target_w} == {image.shape}"
-            )
-
-    if current_h > target_h:
-        image = image[:, :, :, :target_h]
-        if debug:
-            print(
-                f"Condition met: current_h > target_h: Resized image from {current_h} to {target_h} == {image.shape}"
-            )
-
-    if current_w < target_w:
-        pad_size = int(np.floor((target_w - current_w) / 2))
-        p2dw = (0, 0, pad_size, pad_size)
-        image = F.pad(image, p2dw, "constant", 0)
-        if debug:
-            print(
-                f"Condition met: current_w < target_w: Resized image from {current_w} to {target_w} == {image.shape}"
-            )
-
-    if current_h < target_h:
-        pad_size = int(np.floor((target_h - current_h) / 2))
-        p2dh = (pad_size, pad_size, 0, 0)
-        image = F.pad(image, p2dh, "constant", 0)
-        if debug:
-            print(
-                f"Condition met: current_h < target_h: Resized image from {current_h} to {target_h} == {image.shape}"
-            )
-
-    return image
-
-
 @dataclass
 class CLIPModelOutput:
     logits_per_image: torch.Tensor
@@ -136,9 +82,6 @@ class CLIPImageTextModel(nn.Module):
         return self.step(batch, batch_idx=0)
 
     def preprocess_image(self, image: torch.Tensor):
-        image = image.cpu()
-        if len(image.shape) == 4:
-            image = image.unbind(0)
         image = self.processor(images=image, return_tensors="pt")["pixel_values"]
         image = image.to(self.model.device)
 

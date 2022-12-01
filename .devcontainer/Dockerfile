@@ -11,11 +11,13 @@ RUN apt install aptitude tree -y
 RUN echo yes | pip install itables tabulate nvitop
 RUN mamba update -c conda-forge ffmpeg starship -y
 RUN mamba install -c conda-forge itables -y
-RUN mamba install -c conda-forge ipykernel gradio -y
 RUN conda init fish
 RUN echo "starship init fish | source" >~/.config/fish/config.fish
 
 ADD entrypoint.sh /entrypoint.sh
+
+RUN mamba install -c conda-forge ipykernel -y
+RUN yes | pip install gradio
 
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
 
